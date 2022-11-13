@@ -1,5 +1,6 @@
+const User = require('../model/User');
 const asyncHandler = require('express-async-handler');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 exports.accountVerificationJWT = asyncHandler(async(req, res, next) => {
    const {token} = req.query;
@@ -57,9 +58,13 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const cookies = req.cookies;
    if(!cookies?.jwt) return res.status(401).json('unauthorized')
    const token = cookies.jwt
+
+   //check if refresh token has used previously
+   const matchingToken = await User.findOne({refreshToken: token}).exec()
+   if(!matchingToken) return res.status(403).json('bad credentials');
    
    jwt.verify(
-      token,
+      matchingToken.refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
       (error, decoded) => {
          if(error) return res.status(401).json('you are not authorized')

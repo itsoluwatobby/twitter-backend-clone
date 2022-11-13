@@ -3,6 +3,7 @@ const User = require('../model/User');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
 const nodemailer = require('nodemailer');
+const { sub } = require('date-fns')
 
 let transporter = nodemailer.createTransport({
    service: 'gmail',
@@ -45,8 +46,12 @@ exports.registerHandler = asyncHandler( async(req, res) => {
             `
    };
    //save data to db
+   const dateTime = sub(new Date(), { minutes: 0}).toISOString();
    const saveUser = await User.create({ 
-      firstName, lastName, email, password: hashPassword, verificationLink
+      firstName, lastName, email, 
+      password: hashPassword, 
+      verificationLink,
+      registrationDate: dateTime
    });
     
    const result = transporter.sendMail(mailOptions, (err, success) => {
@@ -145,7 +150,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
       const { password, ...rest } = loggedInUser._doc;
          
       res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })//secure: true
-      res.status(200).json({ rest, accessToken });
+      res.status(200).json({ roles, accessToken });
    }
 })
 
