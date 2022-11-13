@@ -90,9 +90,8 @@ exports.deleteAccount = asyncHandler(async(req, res) => {
     if(!targetUser) return res.status(403).json('user not found')
 
     const userPosts = await Post.find({userId: targetUser._id}).lean()
-    if(!userPosts) return res.sendStatus(400)
+    userPosts?.length && await userPosts.deleteMany()
 
-    await userPosts.deleteMany()
     const result = await targetUser.deleteOne()
     result && res.sendStatus(204)
   }
@@ -105,7 +104,7 @@ exports.deleteAccount = asyncHandler(async(req, res) => {
 
     const target = await User.findById(targetId).exec()
     const userPosts = await Post.find({userId: targetUser._id}).lean()
-    if(!userPosts) return res.sendStatus(400)
+    userPosts?.length && await userPosts.deleteMany()
 
     const isAdmin = Object.values(adminUser?.roles).includes('ADMIN')
     if(!isAdmin) return res.status(401).json('unauthorised')

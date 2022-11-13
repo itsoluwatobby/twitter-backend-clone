@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
 
-const commentSchema = new mongoose.Schema(
+const responseSchema = new mongoose.Schema(
    {
       userId: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'users', required: true
       },
-      postId: { 
+      commentId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'posts', required: true
+        ref: 'comments', required: true
       },
       body: { type: String, required: true },
-      commentDate: { type: String, required: true, default: '' },
+      responseDate: { type: String, required: true, default: '' },
       thumbsUp: { type: Array, default: [] },
       thumbsUpDown: { type: Array, default: [] },
    },
@@ -19,4 +19,4 @@ const commentSchema = new mongoose.Schema(
    {timestamps: true}
 )
 
-module.exports = mongoose.model('comments', commentSchema);
+module.exports = mongoose.model('responses', responseSchema);
