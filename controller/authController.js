@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../model/User');
+const User = require('../model/Users');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
 const nodemailer = require('nodemailer');

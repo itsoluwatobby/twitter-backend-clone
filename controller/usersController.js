@@ -1,5 +1,5 @@
-const User = require('../model/User');
-const Post = require('../model/Post');
+const User = require('../model/Users');
+const Post = require('../model/Posts');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
 const { sub } = require('date-fns')
