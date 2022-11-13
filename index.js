@@ -24,11 +24,12 @@ app.get('/public', (req, res) => {
 })
 
 //authentication route
-app.use('/api/v1/users', require('./router/authRoute'));
+app.use('/users', require('./router/authRoute'));
 app.use(accessTokenVerificationJWT)
-
+//user route
+app.use('/api/users', require('./router/userRoute'))
 //post route
-app.use('/api/posts', require('./router/postRoutes'))
+app.use('/posts', require('./router/postRoutes'))
 
 app.all('*', (req, res) => {
    res.status(404).json({ status: false, message: 'resource not found'})
