@@ -18,16 +18,8 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
     await targetUser.updateOne({$set: {password: hashPassword}})
   }
 
-  else if(userInfoUpdate.firstName || userInfoUpdate.lastName || userInfoUpdate.password || userInfoUpdate.profilePicture){
-    await targetUser.updateOne({$set: {firstName: userInfoUpdate.firstName}})
-    await targetUser.updateOne({$set: {lastName: userInfoUpdate.lastName}})
-    await targetUser.updateOne({$set: {profilePicture: userInfoUpdate.profilePicture}})
-  }
-  else if(userInfoUpdate.desc || userInfoUpdate.country || userInfoUpdate.city || userInfoUpdate.relationShip){
-    await targetUser.updateOne({$set: {desc: userInfoUpdate.desc}})
-    await targetUser.updateOne({$set: {country: userInfoUpdate.country}})
-    await targetUser.updateOne({$set: {city: userInfoUpdate.city}})
-    await targetUser.updateOne({$set: {relationShip: userInfoUpdate.relationShip}})
+  else{
+    await targetUser.updateOne({$set: userInfoUpdate})
   }
 
   const user = await User.findById(targetUser._id).select('-password').exec()
@@ -82,37 +74,37 @@ exports.addOrRemoveEditorRole = asyncHandler(async(req, res) => {
 
 //delete user by currentUser or admin AND also delete user posts
 exports.deleteAccount = asyncHandler(async(req, res) => {
-  if(req.params){
     const {userId} = req.params
-    if(!userId) return res.status(403).json('you are not authorised')
+    if(!userId) return res.status(403).json('you are unauthorised')
 
     const targetUser = await User.findById(userId).exec()
     if(!targetUser) return res.status(403).json('user not found')
 
     const userPosts = await Post.find({userId: targetUser._id}).lean()
-    userPosts?.length && await userPosts.deleteMany()
 
+    userPosts?.length && await userPosts.deleteMany()
     const result = await targetUser.deleteOne()
     result && res.sendStatus(204)
-  }
-  else if(req.query){
-    const {adminId, targetId} = req.query
-    if(!adminId || !targetId) return res.status(403).json('you are not authorised')
+})
 
-    const adminUser = await User.findById(adminId).exec()
-    if(!adminUser) return res.status(401).json('you are not authorised')
+exports.deleteAccountByAdmin = asyncHandler(async(req, res) => {
+  const {adminId, userId} = req.query
+  if(!adminId || !userId) return res.status(403).json('you are unauthorised')
 
-    const target = await User.findById(targetId).exec()
-    const userPosts = await Post.find({userId: targetUser._id}).lean()
-    userPosts?.length && await userPosts.deleteMany()
+  const targetUser = await User.findById(userId).exec()
+  if(!targetUser) return res.status(403).json('user not found')
 
-    const isAdmin = Object.values(adminUser?.roles).includes('ADMIN')
-    if(!isAdmin) return res.status(401).json('unauthorised')
+  const adminUser = await User.findById(adminId).exec()
+  if(!adminUser) return res.status(401).json('you are unauthorised..')
 
-    await userPosts.deleteMany()
-    const result = await target.deleteOne()
-    result && res.sendStatus(204)
-  }
+  const userPosts = await Post.find({userId: targetUser._id}).lean()
+
+  const isAdmin = Object.values(adminUser?.roles).includes('ADMIN')
+  if(!isAdmin) return res.status(401).json('unauthorised')
+
+  userPosts?.length && await userPosts.deleteMany()
+  const result = await targetUser.deleteOne()
+  result && res.sendStatus(204)
 })
 
 //get a user
@@ -122,21 +114,28 @@ exports.getUser = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).select('-password').exec()
   if(!targetUser) return res.status(403).json('user not found')
-  res.status(200).json(targetUser)
+  const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = targetUser._doc;
+  res.status(200).json(rest)
 })
 
 //get all users
 exports.getAllUsers = asyncHandler(async(req, res) => {
-  const {userId} = req.params
+  const {userId} = req.query
   if(!userId) return res.status(403).json('you are not authorised')
 
-  const targetUser = await User.findById(userId).select('-password').exec()
+  const targetUser = await User.findById(userId).exec()
   if(!targetUser) return res.status(403).json('user not found')
   
   const allUsers = await User.find().select('-password').lean()
   if(!allUsers?.length) return res.status(403).json('users not found')
 
-  res.status(200).json(allUsers)
+  let users = []
+  await allUsers.map(user => {
+    const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = user;
+    return users.push(rest)
+  })
+  
+  res.status(200).json(users)
 })
 
 //follower user
@@ -151,7 +150,7 @@ exports.followUser = asyncHandler(async(req, res) => {
   if(!followingUser?.following.includes(followedUser._id)){
     await followingUser.updateOne({$push: {following: followedUser._id}})
     await followedUser.updateOne({$push: {followers: followingUser._id}})
-    return res.sendStatus(201)
+    return res.status(201).json('user followed')
   }
   else return res.status(400).json('you already followed this user')
 })
@@ -168,7 +167,7 @@ exports.unfollowUser = asyncHandler(async(req, res) => {
   if(followingUser?.following.includes(followedUser._id)){
     await followingUser.updateOne({$pull: {following: followedUser._id}})
     await followedUser.updateOne({$pull: {followers: followingUser._id}})
-    return res.sendStatus(201)
+    return res.status(201).json('user unfollowed')
   }
   else return res.status(400).json('you do not follow this user')
 })
@@ -188,8 +187,8 @@ exports.userFriends = asyncHandler(async(req, res) => {
 
   let friendList = []
   await friends.map(friend => {
-    const {_id, firstName, lastName, profilePicture, status, followers} = friend._doc
-    friendList.push({_id, firstName, lastName, profilePicture, status, followers})
+    const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = friend
+    friendList.push(rest)
   })
   res.status(200).json(friendList);
 })

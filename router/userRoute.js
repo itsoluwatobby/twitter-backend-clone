@@ -5,24 +5,26 @@ const {
   updateUserInfo, addOrRemoveAminRole, 
   addOrRemoveEditorRole, deleteAccount, 
   getUser, getAllUsers, followUser, 
-  unfollowUser, userFriends } = require('../controller/usersController');
+  unfollowUser, userFriends, deleteAccountByAdmin } = require('../controller/usersController');
 
-router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo())
+router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo)
 
-router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveAminRole())
+router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveAminRole)
 
-router.put('/toggleEditorRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveEditorRole())
+router.put('/toggleEditorRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveEditorRole)
 
-router.delete('/deleteAccount/:userId', verifyRoles([ROLES.ADMIN, ROLES.USER]), deleteAccount())
+router.delete('/deleteAccount/:userId', verifyRoles([ROLES.USER]), deleteAccount)
 
-router.get('/getUser/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getUser())
+router.delete('/deleteAccount', verifyRoles([ROLES.ADMIN]), deleteAccountByAdmin)
 
-router.get('/getUsers/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getAllUsers())
+router.get('/getUser/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getUser)
 
-router.put('/followUser', verifyRoles([ROLES.USER]), followUser())
+router.get('/getUsers', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getAllUsers)
 
-router.put('/unfollowUser', verifyRoles([ROLES.ADMIN, ROLES.USER]), unfollowUser())
+router.put('/followUser', verifyRoles([ROLES.USER]), followUser)
 
-router.get('/userFriends', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), userFriends())
+router.put('/unfollowUser', verifyRoles([ROLES.ADMIN, ROLES.USER]), unfollowUser)
+
+router.get('/userFriends/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), userFriends)
 
 module.exports = router

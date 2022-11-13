@@ -41,7 +41,7 @@ exports.registerHandler = asyncHandler( async(req, res) => {
       subject: `ACCOUNT CONFIRMATION FOR ${firstName} ${lastName}`,
       html: `<h2>Please Tap the Link below To Confirm Your Account</h2><br/>
             <p>Link expires in 15 minutes, please confirm now</p>
-            ${verificationLink}<br/>
+            <p>${verificationLink}</p><br/>
             <span>Please keep link private, it contains some sensitive information about you.</span>
             `
    };
@@ -55,7 +55,7 @@ exports.registerHandler = asyncHandler( async(req, res) => {
    });
     
    const result = transporter.sendMail(mailOptions, (err, success) => {
-      if(err) return res.status(400).json('unable to send email')
+      if(err) return res.status(400).json({message:'unable to send email', err})
       else res.status(200).json('verification link has been sent to your email for confirmation')
    });
 })
@@ -107,7 +107,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
          subject: `ACCOUNT CONFIRMATION FOR ${getConfirmedUser.firstName} ${getConfirmedUser.lastName}`,
          html: `<h2>Please Tap the Link below To Confirm Your Account</h2><br/>
                <p>Link expires in 25 minutes, please confirm now</p>
-               ${verificationLink}<br/>
+               <p>${verificationLink}</p><br/>
                <span>Please keep link private, it contains some sensitive information about you.</span>
                `
       };
@@ -147,10 +147,10 @@ exports.loginHandler = asyncHandler( async(req, res) => {
       
       const loggedInUser = await User.findOne({email}).exec()
 
-      const { password, ...rest } = loggedInUser._doc;
+      const { password, isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
          
       res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })//secure: true
-      res.status(200).json({ roles, accessToken });
+      res.status(200).json({rest, accessToken});
    }
 })
 
@@ -199,7 +199,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
       subject: `PASSWORD RESET TOKEN FOR ${user.firstName} ${user.lastName}`,
       html: `<h2>Please Tap The Link Below To Reset Your Password</h2><br/>
             <p>Link expires in 20 minutes, Reset password</p>
-            ${verificationLink}<br/>
+            <p>${verificationLink}</p><br/>
             <span>Please keep link private, it contains some sensitive information about you.</span>
             `
    };

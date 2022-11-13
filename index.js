@@ -9,7 +9,7 @@ const dbConfig = require('./config/dbConfig')();
 const corsOptions = require('./config/corsOptions');
 const mongoose = require('mongoose');
 const { accessTokenVerificationJWT } = require('./middleware/verifyJWT');
-const PORT = process.env.PORT || 5500
+const PORT = process.env.PORT || 5300
 
 app.use(cors(corsOptions))
 
@@ -27,7 +27,7 @@ app.get('/public', (req, res) => {
 app.use('/users', require('./router/authRoute'));
 app.use(accessTokenVerificationJWT)
 //user route
-app.use('/api/users', require('./router/userRoute'))
+app.use('/users', require('./router/userRoute'))
 //post route
 app.use('/posts', require('./router/postRoutes'))
 

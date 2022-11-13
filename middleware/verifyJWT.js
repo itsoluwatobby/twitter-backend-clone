@@ -46,7 +46,7 @@ exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
       process.env.ACCESS_TOKEN_SECRET,
       (error, decoded) => {
          if(Date.now() >= decoded?.exp * 1000) next()
-         else if(error) return res.status(401).json('you are not authorized')
+         else if(error) return res.status(401).json('you are unauthorized')
          req.email = decoded.userInfo.email
          req.roles = decoded.userInfo.roles
       }
