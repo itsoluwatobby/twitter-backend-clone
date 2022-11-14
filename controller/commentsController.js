@@ -14,10 +14,10 @@ exports.createComment = asyncHandler(async(req, res) => {
   if(!user) return res.status(403).json('user not found')
   
   const post = await Post.findById(newComment?.postId).exec()
-  if(!post) return res.status(403).json('user not found')
+  if(!post) return res.status(403).json('post not found')
   
   const comment = await Comment.create(newComment)
-  comment && res.status(201).json('comment created')
+  comment && res.status(201).json(comment)
 })
 
 //update comment
@@ -30,12 +30,12 @@ exports.updateComments = asyncHandler(async(req, res) => {
   if(!user) return res.status(403).json('user not found')
   
   const post = await Post.findById(editComment.postId).exec()
-  if(!post) return res.status(403).json('user not found')
+  if(!post) return res.status(403).json('post not found')
   
   const targetComment = await Comment.findOne({_id: commentId}).exec()
-  if(!post) return res.status(403).json('user not found')
+  if(!targetComment) return res.status(403).json('comment not found')
   
-  if(targetComment?.userId !== user?._id) return res.sendStatus(401)
+  if(targetComment?.userId !== user?._id) return res.sendStatus(403)
   const comment = await userPost.updateOne({$set: editComment})
 
   post && res.status(201).json(comment)
@@ -121,88 +121,184 @@ exports.getUserComments = asyncHandler(async(req, res) => {
 })
 
 //get all comments in post
-exports.getAllComment = asyncHandler(async(req, res) => {
+exports.getAllCommentInPost = asyncHandler(async(req, res) => {
   const {userId, postId} = req.params
   if(!userId) return res.status(400).json('all fields are required')
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
-
-  const comment = await Post.find().lean()
-  if(!comment?.length) return res.status(400).json('comment not found')
-  res.status(200).json(comment)
-})
-
-//like and unlike a post
-exports.likeAndUnlikePosts = asyncHandler(async(req, res) => {
-  const {userId, postId} = req.params
-  if(!userId || !postId) return res.status(400).json('all fields are required')
-
-  const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
-
-  const post = await Post.findById(postId).exec()
-  if(!post) return res.status(400).json('posts not found')
   
-  if(!Object.values(post?.likes).includes(userId)){
-    await post.updateOne({$push: {likes: userId}})
-    return res.status(201).json('you liked this post')
-  }
-  else{
-    await post.updateOne({$pull: {likes: userId}})
-    return res.status(201).json('you unliked this post')
-  }
+  const post = await Post.findById(postId).exec()
+  if(!post) return res.status(400).json('post not found') 
+
+  const comments = await Comment.find({postId: post._id}).lean()
+  if(!comments?.length) return res.status(400).json('comment not found')
+  res.status(200).json(comments)
 })
 
-//like and unlike a post
-exports.dislikeAndUnDislikePosts = asyncHandler(async(req, res) => {
-  const {userId, postId} = req.params
-  if(!userId || !postId) return res.status(400).json('all fields are required')
+//like and unlike a comment
+exports.likeAndUnlikeComment = asyncHandler(async(req, res) => {
+  const {userId, commentId} = req.params
+  if(!userId || !commentId) return res.status(400).json('all fields are required')
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
 
-  const post = await Post.findById(postId).exec()
-  if(!post) return res.status(400).json('posts not found')
-
-  if(!Object.values(post?.disLikes).includes(userId)){
-    await post.updateOne({$push: {disLikes: userId}})
-    return res.status(201).json('you disliked this post')
+  const comment = await Comment.findById(commentId).exec()
+  if(!comment) return res.status(400).json('comments not found')
+  
+  if(!Object.values(comment?.thumbsUp).includes(userId)){
+    await comment.updateOne({$push: {thumbsUp: userId}})
+    return res.status(201).json('you liked this comment')
   }
   else{
-    await post.updateOne({$pull: {disLikes: userId}})
-    return res.status(201).json('you unDisliked this post')
+    await comment.updateOne({$pull: {thumbsUp: userId}})
+    return res.status(201).json('you unliked this comment')
+  }
+})
+
+//like and unlike a post
+exports.dislikeAndUnDislikeComment = asyncHandler(async(req, res) => {
+  const {userId, commentId} = req.params
+  if(!userId || !commentId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
+
+  const comment = await Comment.findById(commentId).exec()
+  if(!comment) return res.status(400).json('comments not found')
+  
+  if(!Object.values(comment?.thumbsUpDown).includes(userId)){
+    await comment.updateOne({$push: {thumbsUpDown: userId}})
+    return res.status(201).json('you liked this comment')
+  }
+  else{
+    await comment.updateOne({$pull: {thumbsUpDown: userId}})
+    return res.status(201).json('you unliked this comment')
   }
 })
 
 
 //................ RESPONSE ..................
-exports.postResponse = asyncHandler(async(req, res) => {
+exports.commentResponse = asyncHandler(async(req, res) => {
+  const newResponse = req.body
+  if(!newResponse?.userId || !newResponse?.commentId || !newResponse.body) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(newResponse?.userId).exec()
+  if(!user) return res.status(403).json('user not found')
   
+  const comment = await Comment.findById(newResponse?.commentId).exec()
+  if(!comment) return res.status(403).json('comment not found')
+  
+  const response = await CommentResponse.create(newResponse)
+  comment && res.status(201).json(response)
 })
 
-//delete comment on a post
+//delete response on a comment
 exports.deleteResponse = asyncHandler(async(req, res) => {
-  
+  const {userId, responseId} = req.params
+  if(!userId || !responseId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
+
+  const userResponse = await CommentResponse.findById(responseId).exec()
+  if(!userResponse) return res.status(400).json('you do not have a post')
+
+  if(userResponse?.userId !== user?._id) return res.sendStatus(403)
+  await userResponse.deleteOne()
+  res.status(204).json('response deleted')
 })
 
-//update comment on a post
+//edit response in a comment
 exports.editResponse = asyncHandler(async(req, res) => {
+  const {responseId} = req.params
+  const editResponse = req.body
+  if(!editResponse?.userId || !editResponse?.commentId || !editResponse.body) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(editResponse.userId).exec()
+  if(!user) return res.status(403).json('user not found')
   
+  const comment = await Comment.findById(editResponse.commentId).exec()
+  if(!comment) return res.status(403).json('comment not found')
+  
+  const targetResponse = await Response.findOne({_id: responseId}).exec()
+  if(!targetResponse) return res.status(403).json('response not found')
+  
+  if(targetResponse?.userId !== user?._id) return res.sendStatus(403)
+  const response = await userPost.updateOne({$set: editResponse})
+
+  response && res.status(201).json(response)
 })
 
-//get all comments on a post
-exports.getResponses = asyncHandler(async(req, res) => {
+//get all responses on a comment
+exports.getAllResponseInComment = asyncHandler(async(req, res) => {
+  const {userId, commentId} = req.params
+  if(!userId || commentId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
   
+  const comment = await Comment.findById(commentId).exec()
+  if(!comment) return res.status(400).json('comment not found') 
+
+  const response = await CommentResponse.find({commentId: comment._id}).lean()
+  if(!response?.length) return res.status(400).json('response not found')
+  res.status(200).json(response)
 })
 
 //get a comment
 exports.getResponse = asyncHandler(async(req, res) => {
-  
+  const {commentId, responseId} = req.params
+  if(!commentId || !postId) return res.status(400).json('all fields are required')
+
+  const comment = await Comment.findById(commentId).exec()
+  if(!comment) return res.status(400).json('comment not found')
+
+  const response = await CommentResponse.findById(responseId).exec()
+  if(!response) return res.status(400).json('response not found') 
+
+  res.status(200).json(response)
 })
 
-//like and unlike comment
+//like and unlike a response
 exports.likeAndUnlikeResponse = asyncHandler(async(req, res) => {
+  const {userId, responseId} = req.params
+  if(!userId || !responseId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
+
+  const response = await CommentResponse.findById(responseId).exec()
+  if(!response) return res.status(400).json('responses not found')
   
+  if(!Object.values(response?.thumbsUp).includes(userId)){
+    await response.updateOne({$push: {thumbsUp: userId}})
+    return res.status(201).json('you liked this response')
+  }
+  else{
+    await response.updateOne({$pull: {thumbsUp: userId}})
+    return res.status(201).json('you unliked this response')
+  }
 })
 
+//dislike and undislike a response
+exports.dislikeAndUnDislikeResponse = asyncHandler(async(req, res) => {
+  const {userId, responseId} = req.params
+  if(!userId || !responseId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
+
+  const response = await CommentResponse.findById(responseId).exec()
+  if(!response) return res.status(400).json('responses not found')
+  
+  if(!Object.values(response?.thumbsUpDown).includes(userId)){
+    await response.updateOne({$push: {thumbsUpDown: userId}})
+    return res.status(201).json('you liked this response')
+  }
+  else{
+    await response.updateOne({$pull: {thumbsUpDown: userId}})
+    return res.status(201).json('you unliked this response')
+  }
+})
