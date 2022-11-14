@@ -5,7 +5,8 @@ const {
   updateUserInfo, addOrRemoveAminRole, 
   addOrRemoveEditorRole, deleteAccount, 
   getUser, getAllUsers, followUser, 
-  unfollowUser, userFriends, deleteAccountByAdmin } = require('../controller/usersController');
+  unfollowUser, userFriends, 
+  deleteAccountByAdmin, lockOrUnlockAccount } = require('../controller/usersController');
 
 router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo)
 
@@ -26,5 +27,7 @@ router.put('/followUser', verifyRoles([ROLES.USER]), followUser)
 router.put('/unfollowUser', verifyRoles([ROLES.ADMIN, ROLES.USER]), unfollowUser)
 
 router.get('/userFriends/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), userFriends)
+
+router.put('/lockAndUnlockAccount/:adminId/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR]), lockOrUnlockAccount)
 
 module.exports = router

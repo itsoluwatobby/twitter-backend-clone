@@ -29,7 +29,7 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
 //add or remove admin role
 exports.addOrRemoveAminRole = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
-  if(!adminId) return res.status(403).json('admin ID required')
+  if(!adminId || !userId) return res.status(403).json('admin ID required')
 
   //get admin user
   const adminUser = await User.findById(adminId).exec()
@@ -40,11 +40,11 @@ exports.addOrRemoveAminRole = asyncHandler(async(req, res) => {
     const user = await User.findById(userId).exec()
     if(!Object.values(user?.roles).includes('ADMIN')){
       const result = await user.updateOne({$push: {roles: 'ADMIN'}})
-      result && res.status(201).json(result)
+      result && res.status(201).json('admin role added')
     }
     else{
       const result = await user.updateOne({$pull: {roles: 'ADMIN'}})
-      result && res.status(201).json(result)
+      result && res.status(201).json('admin role removed')
     }
   }
 })
@@ -52,7 +52,7 @@ exports.addOrRemoveAminRole = asyncHandler(async(req, res) => {
 //add or remove editor role
 exports.addOrRemoveEditorRole = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
-  if(!adminId) return res.status(403).json('admin ID required')
+  if(!adminId || !userId) return res.status(403).json('admin ID required')
 
   //get admin user
   const adminUser = await User.findById(adminId).exec()
@@ -63,11 +63,11 @@ exports.addOrRemoveEditorRole = asyncHandler(async(req, res) => {
     const user = await User.findById(userId).exec()
     if(!Object.values(user?.roles).includes('EDITOR')){
       const result = await user.updateOne({$push: {roles: 'EDITOR'}})
-      result && res.status(201).json(result)
+      result && res.status(201).json('editor role added')
     }
     else{
       const result = await user.updateOne({$pull: {roles: 'EDITOR'}})
-      result && res.status(201).json(result)
+      result && res.status(201).json('editor role removed')
     }
   }
 })
@@ -191,5 +191,28 @@ exports.userFriends = asyncHandler(async(req, res) => {
     friendList.push(rest)
   })
   res.status(200).json(friendList);
+})
+
+//lock and unlock an account by admin
+exports.lockOrUnlockAccount = asyncHandler(async(req, res) => {
+  const {adminId, userId} = req.params
+  if(!adminId || !userId) return res.status(403).json('admin ID required')
+
+  //get admin user
+  const adminUser = await User.findById(adminId).exec()
+  if(!adminUser) return res.status(401).json('you are not authorised')
+  const isAdmin = Object.values(adminUser?.roles).includes('ADMIN')
+  if(!isAdmin) return res.status(401).json('unauthorised')
+  else if(isAdmin){
+    const user = await User.findById(userId).exec()
+    if(user.isAccountLocked){
+      const result = await user.updateOne({$set: {isAccountLocked: false}})
+      result && res.status(200).json('account unlocked')
+    }
+    else{
+      const result = await user.updateOne({$set: {isAccountLocked: true}})
+      result && res.status(201).json('account locked')
+    }
+  }
 })
 
