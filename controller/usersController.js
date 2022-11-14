@@ -17,7 +17,11 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
     const hashPassword = await bcrypt.hash(userInfoUpdate.password, 10)
     await targetUser.updateOne({$set: {password: hashPassword}})
   }
-
+  else if(userInfoUpdate.hobbies){
+    await Promise.all(userInfoUpdate?.hobbies.map(hobby => (
+      targetUser.updateOne({$push: {hobbies: hobby}})
+    )))
+  }
   else{
     await targetUser.updateOne({$set: userInfoUpdate})
   }
@@ -27,7 +31,7 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
 })
 
 //add or remove admin role
-exports.addOrRemoveAminRole = asyncHandler(async(req, res) => {
+exports.addOrRemoveAdminRole = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
   if(!adminId || !userId) return res.status(403).json('admin ID required')
 

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const {verifyRoles} = require('../middleware/verifyRoles')
 const {ROLES} = require('../config/allowedRoles');
 const { 
-  updateUserInfo, addOrRemoveAminRole, 
+  updateUserInfo, addOrRemoveAdminRole, 
   addOrRemoveEditorRole, deleteAccount, 
   getUser, getAllUsers, followUser, 
   unfollowUser, userFriends, 
@@ -10,7 +10,7 @@ const {
 
 router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo)
 
-router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveAminRole)
+router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveAdminRole)
 
 router.put('/toggleEditorRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), addOrRemoveEditorRole)
 

@@ -191,7 +191,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
       {expiresIn: '20m'}
    )
 
-   const verificationLink = `${process.env.ROUTE_LINK}/password_reset_confirmation?token=${token}`
+   const resetLink = `${process.env.ROUTE_LINK}/password_reset_confirmation?token=${token}`
 
    const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
@@ -199,7 +199,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
       subject: `PASSWORD RESET TOKEN FOR ${user.firstName} ${user.lastName}`,
       html: `<h2>Please Tap The Link Below To Reset Your Password</h2><br/>
             <p>Link expires in 20 minutes, Reset password</p>
-            <p>${verificationLink}</p><br/>
+            <p>${resetLink}</p><br/>
             <span>Please keep link private, it contains some sensitive information about you.</span>
             `
    };
@@ -207,7 +207,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
    await user.updateOne({$set: {resetPassword: true}})
    const result = transporter.sendMail(mailOptions, (err, success) => {
       if(err) return res.status(400).json('unable to send email')
-      else res.status(200).json('verification link has been sent to your email for confirmation')
+      else res.status(200).json('password reset link has been sent to your email for confirmation')
    });
 })
 

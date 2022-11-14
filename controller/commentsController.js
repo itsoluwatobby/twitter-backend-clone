@@ -120,7 +120,7 @@ exports.getUserComments = asyncHandler(async(req, res) => {
   res.status(200).json(comments)
 })
 
-//get all comments in post
+//get all comments in comments in post
 exports.getAllCommentInPost = asyncHandler(async(req, res) => {
   const {userId, postId} = req.params
   if(!userId) return res.status(400).json('all fields are required')
