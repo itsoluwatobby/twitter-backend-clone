@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema(
       body: { type: String, required: true },
       likes: { type: Array, default: [] },
       disLikes: { type: Array, default: [] },
+      isShared: { type: Array, default: [] }
    },
    {minimize: false},
    {timestamps: true}

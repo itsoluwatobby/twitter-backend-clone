@@ -1,11 +1,11 @@
 require('dotenv').config()
+require('./config/dbConfig')();
 const express = require('express');
 const app = express();
 const cors = require('cors')
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const morgan = require('morgan')
-const dbConfig = require('./config/dbConfig')();
 const corsOptions = require('./config/corsOptions');
 const mongoose = require('mongoose');
 const { accessTokenVerificationJWT } = require('./middleware/verifyJWT');
@@ -26,10 +26,15 @@ app.get('/public', (req, res) => {
 //authentication route
 app.use('/users', require('./router/authRoute'));
 app.use(accessTokenVerificationJWT)
+
 //user route
 app.use('/users', require('./router/userRoute'))
+
 //post route
 app.use('/posts', require('./router/postRoutes'))
+
+//comment route
+app.use('/posts', require('./router/commentRoutes'))
 
 app.all('*', (req, res) => {
    res.status(404).json({ status: false, message: 'resource not found'})

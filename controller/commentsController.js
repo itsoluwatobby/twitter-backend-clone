@@ -8,7 +8,7 @@ const { sub } = require('date-fns')
 ///create a comment
 exports.createComment = asyncHandler(async(req, res) => {
   const newComment = req.body
-  if(!newComment?.userId || !newComment?.postId || !newComment.body) return res.status(400).json('all fields are required')
+  if(!newComment?.userId || !newComment?.postId || !newComment.body || !newComment?.commentDate) return res.status(400).json('all fields are required')
 
   const user = await User.findById(newComment?.userId).exec()
   if(!user) return res.status(403).json('user not found')
@@ -107,7 +107,7 @@ exports.getComment = asyncHandler(async(req, res) => {
 })
 
 //get user's comments by admin
-exports.getUserComments = asyncHandler(async(req, res) => {
+exports.getUserCommentsByAdmin = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
   if(!adminId || !userId) return res.status(400).json('all fields are required')
 
@@ -122,12 +122,9 @@ exports.getUserComments = asyncHandler(async(req, res) => {
 
 //get all comments in comments in post
 exports.getAllCommentInPost = asyncHandler(async(req, res) => {
-  const {userId, postId} = req.params
-  if(!userId) return res.status(400).json('all fields are required')
+  const {postId} = req.params
+  if(!postId) return res.status(400).json('all fields are required')
 
-  const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
-  
   const post = await Post.findById(postId).exec()
   if(!post) return res.status(400).json('post not found') 
 
@@ -180,9 +177,9 @@ exports.dislikeAndUnDislikeComment = asyncHandler(async(req, res) => {
 
 
 //................ RESPONSE ..................
-exports.commentResponse = asyncHandler(async(req, res) => {
+exports.createResponse = asyncHandler(async(req, res) => {
   const newResponse = req.body
-  if(!newResponse?.userId || !newResponse?.commentId || !newResponse.body) return res.status(400).json('all fields are required')
+  if(!newResponse?.userId || !newResponse?.commentId || !newResponse?.responseDate || !newResponse.body) return res.status(400).json('all fields are required')
 
   const user = await User.findById(newResponse?.userId).exec()
   if(!user) return res.status(403).json('user not found')
@@ -250,7 +247,7 @@ exports.getAllResponseInComment = asyncHandler(async(req, res) => {
 //get a comment
 exports.getResponse = asyncHandler(async(req, res) => {
   const {commentId, responseId} = req.params
-  if(!commentId || !postId) return res.status(400).json('all fields are required')
+  if(!commentId || !responseId) return res.status(400).json('all fields are required')
 
   const comment = await Comment.findById(commentId).exec()
   if(!comment) return res.status(400).json('comment not found')

@@ -1,19 +1,20 @@
 const User = require('../model/User');
 const Post = require('../model/Posts');
-const Comment = require('../model/Comments');
+const SharedPost = require('../model/SharedPosts');
 const asyncHandler = require('express-async-handler');
-const { sub } = require('date-fns')
+const { sub } = require('date-fns');
+const SharedPosts = require('../model/SharedPosts');
 
 //create a post
 exports.createPosts = asyncHandler(async(req, res) => {
   const newPost = req.body
-  if(!newPost?.userId || !newPost?.title || !newPost.body) return res.status(400).json('all fields are required')
+  if(!newPost?.userId || !newPost?.title || !newPost.body || !newPost?.postDate) return res.status(400).json('all fields are required')
 
   const user = await User.findById(newPost.userId).exec()
   if(!user) return res.status(403).json('user not found')
   const post = await Post.create(newPost)
 
-  post ? res.status(201).json('post created') : res.status(500).json('unable to create post')
+  post && res.status(201).json('post created')
 })
 
 //update post
@@ -84,12 +85,11 @@ exports.deleteUsersPostsByAdmin = asyncHandler(async(req, res) => {
 
 //get a post
 exports.getPost = asyncHandler(async(req, res) => {
-  const {userId, postId} = req.params
-  if(!userId || !postId) return res.status(400).json('all fields are required')
+  const {postId} = req.params
+  if(!postId) return res.status(400).json('all fields are required')
 
-  const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
-
+  // const user = await User.findById(userId).exec()
+  // if(!user) return res.status(403).json('user not found') 
   const post = await Post.findById(postId).exec()
   if(!post) return res.status(400).json('post not found')
   res.status(200).json(post)
@@ -103,7 +103,7 @@ exports.getUserPosts = asyncHandler(async(req, res) => {
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
 
-  const posts = await Post.find({userId}).lean()
+  const posts = await Post.find({userId: user._id}).lean()
   if(!posts?.length) return res.status(400).json('posts not found')
   res.status(200).json(posts)
 })
@@ -164,6 +164,30 @@ exports.dislikeAndUnDislikePosts = asyncHandler(async(req, res) => {
 })
 
 //share a post
-exports.sharePosts = asyncHandler(async(req, res) => {
-  
+exports.sharePost = asyncHandler(async(req, res) => {
+  const {sharerId, userId, postId} = req.params
+  if(!sharerId || !userId || !postId) return res.status(400).json('all fields are required')
+
+  //user post
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('user not found') 
+
+  const post = await Post.findById(postId).exec()
+  if(!post) return res.status(400).json('posts not found')
+
+  if(!Object.values(post?.isShared).includes(sharerId)){
+    await post.updateOne({$push: {isShared: sharerId}})
+    
+    const sharedDate = sub(new Date(), { minutes: 0}).toISOString();
+    const share = await SharedPosts.create({
+      sharerId, sharedDate, sharedPost: post
+    })
+    res.status(201).json(share)
+  }
+  else{
+    await post.updateOne({$pull: {isShared: sharerId}})
+    const sharedPost = await SharedPosts.findOne({sharedPost: {_id: post._id}})
+    await sharedPost.deleteOne()
+    res.status(204).json('you unShared this post')
+  }
 })

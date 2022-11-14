@@ -31,7 +31,7 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
 })
 
 //add or remove admin role
-exports.addOrRemoveAdminRole = asyncHandler(async(req, res) => {
+exports.toggleAdminRole = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
   if(!adminId || !userId) return res.status(403).json('admin ID required')
 
@@ -54,7 +54,7 @@ exports.addOrRemoveAdminRole = asyncHandler(async(req, res) => {
 })
 
 //add or remove editor role
-exports.addOrRemoveEditorRole = asyncHandler(async(req, res) => {
+exports.toggleEditorRole = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.params
   if(!adminId || !userId) return res.status(403).json('admin ID required')
 

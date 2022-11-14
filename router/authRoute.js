@@ -1,15 +1,14 @@
+const router = require('express').Router();
 const { 
    registerHandler, loginHandler, 
    logoutHandler, confirmationHandler, 
    passwordConfirmationLink, passwordResetHandler, 
-   passwordResetConfirmation, getNewAccessToken 
-} = require('../controller/authController');
+   passwordResetConfirmation, getNewAccessToken } = require('../controller/authController');
+
 const { 
    accountVerificationJWT, 
    passwordVerificationJWT, 
-   refreshTokenVerificationJWT
-} = require('../middleware/verifyJWT');
-const router = require('express').Router();
+   refreshTokenVerificationJWT } = require('../middleware/verifyJWT');
 
 //registration and account confirmation route
 router.post('/register', registerHandler)
