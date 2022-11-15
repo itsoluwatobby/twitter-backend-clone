@@ -1,4 +1,4 @@
-const User = require('../model/User');
+const User = require('../model/Users');
 const CommentResponse = require('../model/CommentResponse');
 const Comment = require('../model/Comments');
 const Post = require('../model/Posts');
@@ -35,10 +35,11 @@ exports.updateComments = asyncHandler(async(req, res) => {
   const targetComment = await Comment.findOne({_id: commentId}).exec()
   if(!targetComment) return res.status(403).json('comment not found')
   
-  if(targetComment?.userId !== user?._id) return res.sendStatus(403)
-  const comment = await userPost.updateOne({$set: editComment})
+  if(!targetComment?.userId.equals(user?._id)) return res.sendStatus(403)
+  await userPost.updateOne({$set: editComment})
 
-  post && res.status(201).json(comment)
+  const comment = await Comment.findOne({_id: commentId}).exec()
+  comment && res.status(201).json(comment)
 })
 
 //delete comment by user
@@ -52,7 +53,7 @@ exports.deleteComment = asyncHandler(async(req, res) => {
   const userComment = await Comment.findById(commentId).exec()
   if(!userComment) return res.status(400).json('you do not have a post')
 
-  if(userComment?.userId !== user?._id) return res.sendStatus(401)
+  if(!userComment?.userId.equals(user?._id)) return res.sendStatus(401)
   await userComment.deleteOne()
   res.status(204).json('comment deleted')
 })
@@ -85,11 +86,12 @@ exports.deleteUsersCommentsByAdmin = asyncHandler(async(req, res) => {
   const post = await Post.findById(postId).exec()
   if(!post) return res.status(400).json('post not found') 
 
-  const comments = await Comment.find({postId: post._id}).lean()
-  if(!comments?.length) return res.status(400).json('user does not have a comment')
-  
-  await comments.deleteMany()
-  res.status(204).json('user comments deleted')
+  const comments = await Comment.find({postId: post._id}).exec()
+  if(!comments?.length) return res.status(400).json('no comments by user')
+
+  await Comment.deleteMany({postId: post._id})
+        .then(() => res.status(204).json('user comments deleted'))
+        .catch(error => res.status(400).json('error deleting comments'))
 })
 
 //get a comment
@@ -202,7 +204,7 @@ exports.deleteResponse = asyncHandler(async(req, res) => {
   const userResponse = await CommentResponse.findById(responseId).exec()
   if(!userResponse) return res.status(400).json('you do not have a post')
 
-  if(userResponse?.userId !== user?._id) return res.sendStatus(403)
+  if(!userResponse?.userId.equals(user?._id)) return res.sendStatus(403)
   await userResponse.deleteOne()
   res.status(204).json('response deleted')
 })
@@ -222,9 +224,10 @@ exports.editResponse = asyncHandler(async(req, res) => {
   const targetResponse = await Response.findOne({_id: responseId}).exec()
   if(!targetResponse) return res.status(403).json('response not found')
   
-  if(targetResponse?.userId !== user?._id) return res.sendStatus(403)
-  const response = await userPost.updateOne({$set: editResponse})
+  if(!targetResponse?.userId.equals(user?._id)) return res.sendStatus(403)
+  await targetResponse.updateOne({$set: editResponse})
 
+  const response = await Response.findOne({_id: responseId}).exec()
   response && res.status(201).json(response)
 })
 

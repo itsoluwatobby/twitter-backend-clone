@@ -4,8 +4,10 @@ const {ROLES} = require('../config/allowedRoles');
 const { 
    createPosts, updatePost, deletePosts, 
    deletePostByAdmin, deleteUsersPostsByAdmin, 
-   getPost, getAllPosts, getUserPosts, likeAndUnlikePosts, 
-   dislikeAndUnDislikePosts, sharePost } = require('../controller/postController');
+   getPost, getAllPosts, getUserPosts, 
+   likeAndUnlikePosts, dislikeAndUnDislikePosts, 
+   sharePost, unSharePost, getUserSharedPosts, 
+   getAllSharedPosts } = require('../controller/postController');
 
 router.post('/createPost', verifyRoles([ROLES.USER]), createPosts)
 
@@ -24,11 +26,19 @@ router.get('/getAllPosts/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR, ROLES.
 
 router.get('/getUserPosts/:userId', verifyRoles([ROLES.USER]), getUserPosts)
 
-router.put('/like&unlikePost/:userId/:postId', verifyRoles([ROLES.USER]), likeAndUnlikePosts)
+router.put('/likeAndUnlikePost/:userId/:postId', verifyRoles([ROLES.USER]), likeAndUnlikePosts)
 
-router.put('/dislike&unDislikePost/:userId/:postId', verifyRoles([ROLES.USER]), dislikeAndUnDislikePosts)
+router.put('/dislikeAndUnDislikePost/:userId/:postId', verifyRoles([ROLES.USER]), dislikeAndUnDislikePosts)
 
-router.post('/sharePost/:sharerId/:userId/:postId', verifyRoles([ROLES.USER]), sharePost)
+// query sharerId, ownerId and postId
+router.post('/sharePost', verifyRoles([ROLES.USER]), sharePost)
+
+// query sharerId, ownerId and postId
+router.delete('/unSharePost', verifyRoles([ROLES.USER]), unSharePost)
+
+router.get('/getUserSharedPost/:sharerId', verifyRoles([ROLES.USER]), getUserSharedPosts)
+
+router.get('/getAllSharedPost/:ownerId', verifyRoles([ROLES.USER]), getAllSharedPosts)
 
 module.exports = router
 

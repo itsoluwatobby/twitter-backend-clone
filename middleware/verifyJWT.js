@@ -4,15 +4,15 @@ const jwt = require('jsonwebtoken');
 
 exports.accountVerificationJWT = asyncHandler(async(req, res, next) => {
    const {token} = req.query;
-   if(!token) return res.status(401).json('unauthorized')
+   if(!token) return res.status(403).json('bad credentials')
    jwt.verify(
       token,
       process.env.ACCOUNT_CONFIRMATION_TOKEN_SECRET,
       (error, decoded) => {
-         if(error && Date.now() >= decoded?.exp * 1000) {
-             return res.status(406).json('verification link expired, please login in to get a new confirmation link')
+         if(error?.name === 'TokenExpiredError'){ 
+            return res.status(403).json('verification link expired. Please log in to get a new confirmation link')
          }
-         else if(error) return res.status(401).json('you are not authorized')
+         else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
          req.firstName = decoded.userInfo.firstName
          req.email = decoded.userInfo.email
       }
@@ -22,13 +22,13 @@ exports.accountVerificationJWT = asyncHandler(async(req, res, next) => {
 
 exports.passwordVerificationJWT = asyncHandler(async(req, res, next) => {
    const {token} = req.query;
-   if(!token) return res.status(401).json('unauthorized')
+   if(!token) return res.status(403).json('bad credentials')
    jwt.verify(
       token,
       process.env.PASSWORD_RESET_TOKEN_SECRET,
       (error, decoded) => {
-         if(Date.now() >= decoded?.exp * 1000) next()
-         else if(error) return res.status(401).json('you are not authorized')
+         if(error?.name === 'TokenExpiredError') return res.status(403).json('password reset link expired')
+         else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
          req.email = decoded.userInfo.email
          req.roles = decoded.userInfo.roles
       }
@@ -38,15 +38,15 @@ exports.passwordVerificationJWT = asyncHandler(async(req, res, next) => {
 
 exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const auth = req.headers.authorization || req.headers.Authorization
-   if(!auth || !auth?.startsWith('Bearer ')) return res.status(401).json('unauthorized')
+   if(!auth || !auth?.startsWith('Bearer ')) return res.status(403).json('bad credentials')
    const token = auth.split(' ')[1]
   
    jwt.verify(
       token,
       process.env.ACCESS_TOKEN_SECRET,
       (error, decoded) => {
-         if(Date.now() >= decoded?.exp * 1000) next()
-         else if(error) return res.status(401).json('you are unauthorized')
+         if(error?.name === 'TokenExpiredError') return res.status(403).json('Expired token')
+         else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
          req.email = decoded.userInfo.email
          req.roles = decoded.userInfo.roles
       }
@@ -56,7 +56,7 @@ exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
 
 exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const cookies = req.cookies;
-   if(!cookies?.jwt) return res.status(401).json('unauthorized')
+   if(!cookies?.jwt) return res.status(403).json('bad credentials')
    const token = cookies.jwt
 
    //check if refresh token has used previously
@@ -67,7 +67,8 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
       matchingToken.refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
       (error, decoded) => {
-         if(error) return res.status(401).json('you are not authorized')
+         if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
+         else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
          req.email = decoded.userInfo.email
       }
    )

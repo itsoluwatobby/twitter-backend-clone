@@ -6,9 +6,12 @@ const {
   toggleEditorRole, deleteAccount, 
   getUser, getAllUsers, followUser, 
   unfollowUser, userFriends, 
-  deleteAccountByAdmin, lockOrUnlockAccount } = require('../controller/usersController');
+  deleteAccountByAdmin, lockOrUnlockAccount, 
+  deleteHobbies } = require('../controller/usersController');
 
 router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo)
+
+router.delete('/deleteHobby/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), deleteHobbies)
 
 router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), toggleAdminRole)
 

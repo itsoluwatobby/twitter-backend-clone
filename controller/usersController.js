@@ -18,13 +18,34 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
     await targetUser.updateOne({$set: {password: hashPassword}})
   }
   else if(userInfoUpdate.hobbies){
-    await Promise.all(userInfoUpdate?.hobbies.map(hobby => (
+    const filteredHobbies = userInfoUpdate.hobbies.filter(hob => !targetUser.hobbies.includes(hob))
+
+    await Promise.all(filteredHobbies.map(hobby => (
       targetUser.updateOne({$push: {hobbies: hobby}})
     )))
   }
   else{
     await targetUser.updateOne({$set: userInfoUpdate})
   }
+
+  const user = await User.findById(targetUser._id).select('-password').exec()
+  res.status(201).json(user)
+})
+
+//delete hobby
+exports.deleteHobbies = asyncHandler(async(req, res) => {
+  const {userId} = req.params
+  const {hobbies} = req.body
+  if(!userId || !Array.isArray(hobbies)) return res.status(400).json('all fields are required')
+
+  const targetUser = await User.findById(userId).exec()
+  if(!targetUser) return res.status(403).json('user not found')
+
+  const filteredHobbies = hobbies.filter(hob => targetUser.hobbies.includes(hob))
+
+  await Promise.all(filteredHobbies.map(hobby => (
+    targetUser.updateOne({$pull: {hobbies: hobby}})
+  )))
 
   const user = await User.findById(targetUser._id).select('-password').exec()
   res.status(201).json(user)
