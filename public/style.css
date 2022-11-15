@@ -1,0 +1,22 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+  background-color: rgba(0,0,0,0.92);
+  display: grid;
+  place-content: center;
+  font-size: 2em;
+  font-family: sans-serif;
+  box-shadow: -2px 4px 16px rgba(0,0,0,0.3);
+  color: white;
+  height: 100vh;
+  width: 100vw;
+}
+
+h1{
+  text-transform: capitalize;
+  text-align: center;
+}

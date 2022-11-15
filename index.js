@@ -5,7 +5,8 @@ const app = express();
 const cors = require('cors')
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
-const morgan = require('morgan')
+const morgan = require('morgan');
+const path = require('path');
 const corsOptions = require('./config/corsOptions');
 const mongoose = require('mongoose');
 const { accessTokenVerificationJWT } = require('./middleware/verifyJWT');
@@ -14,13 +15,14 @@ const PORT = process.env.PORT || 5300
 app.use(cors(corsOptions))
 
 app.use(helmet())
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(morgan('common'))
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 app.use(cookieParser())
 
 app.get('/public', (req, res) => {
-   res.status(200).json({status: true, message: 'server up and running'})
+   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 })
 
 //authentication route
@@ -37,7 +39,7 @@ app.use('/posts', require('./router/postRoutes'))
 app.use('/posts', require('./router/commentRoutes'))
 
 app.all('*', (req, res) => {
-   res.status(404).json({ status: false, message: 'resource not found'})
+   res.sendFile(path.join(__dirname, 'public', '404.html'))
 })
 
 mongoose.connection.once('open', () => {
