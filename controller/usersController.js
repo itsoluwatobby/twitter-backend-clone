@@ -28,6 +28,10 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
     await targetUser.updateOne({$set: userInfoUpdate})
   }
 
+  const dateTime = sub(new Date(), { minutes: 0}).toISOString();
+  await targetUser.updateOne({$set: {edited: true}})
+  await targetUser.updateOne({$set: {editDate: dateTime}})
+
   const user = await User.findById(targetUser._id).select('-password').exec()
   res.status(201).json(user)
 })

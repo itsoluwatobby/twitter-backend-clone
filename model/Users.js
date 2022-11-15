@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
       registrationDate: { type: String, default: '' },
       resetPassword: { type: Boolean, default: false },
       refreshToken: { type: String, default: '' },
+      edited: { type: Boolean, default: false },
+      editDate: { type: String, default: '' }
    },
    {minimize: false},
    {timestamps: true}

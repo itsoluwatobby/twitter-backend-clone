@@ -7,7 +7,8 @@ const {
    getPost, getAllPosts, getUserPosts, 
    likeAndUnlikePosts, dislikeAndUnDislikePosts, 
    sharePost, unSharePost, getUserSharedPosts, 
-   getAllSharedPosts } = require('../controller/postController');
+   getAllSharedPosts, 
+   getSharedPost} = require('../controller/postController');
 
 router.post('/createPost', verifyRoles([ROLES.USER]), createPosts)
 
@@ -35,6 +36,8 @@ router.post('/sharePost', verifyRoles([ROLES.USER]), sharePost)
 
 // query sharerId, ownerId and postId
 router.delete('/unSharePost', verifyRoles([ROLES.USER]), unSharePost)
+
+router.get('/getSharedPost/:userId/:sharedPostId', verifyRoles([ROLES.USER]), getSharedPost)
 
 router.get('/getUserSharedPost/:sharerId', verifyRoles([ROLES.USER]), getUserSharedPosts)
 

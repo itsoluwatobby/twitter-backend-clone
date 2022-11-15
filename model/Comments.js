@@ -8,6 +8,8 @@ const commentSchema = new mongoose.Schema(
       commentDate: { type: String, required: true, default: '' },
       thumbsUp: { type: Array, default: [] },
       thumbsUpDown: { type: Array, default: [] },
+      edited: { type: Boolean, default: false },
+      editDate: { type: String, default: '' }
    },
    {minimize: false},
    {timestamps: true}

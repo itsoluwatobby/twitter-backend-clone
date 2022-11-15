@@ -7,7 +7,7 @@ const {
   deleteUsersCommentsByAdmin, getUserCommentsByAdmin, 
   getComment, getAllCommentInPost, likeAndUnlikeComment, 
   dislikeAndUnDislikeComment, createResponse, editResponse, 
-  deleteResponse, getResponse, getAllResponseInComment, likeAndUnlikeResponse, dislikeAndUnDislikeResponse} = require('../controller/commentsController');
+  deleteResponse, getResponse, getAllResponseInComment, likeAndUnlikeResponse, dislikeAndUnDislikeResponse, getAllComments, getAllResponse} = require('../controller/commentsController');
 
 
 //................... COMMENT ROUTES ........................
@@ -23,15 +23,17 @@ router.delete('/adminCommentDelete/:adminId/:commentId', verifyRoles([ROLES.ADMI
 //query adminId and postId
 router.delete('/deleteUserComments', verifyRoles([ROLES.ADMIN]), deleteUsersCommentsByAdmin)
 
+router.get('/getComments/:userId', verifyRoles([ROLES.USER]), getAllComments)
+
 router.get('/getComment/:commentId/:postId', verifyRoles([ROLES.USER]), getComment)
 
 router.get('/getUserComments/:adminId/:userId', verifyRoles([ROLES.EDITOR, ROLES.ADMIN]), getUserCommentsByAdmin)
 
 router.get('/getCommentsInPost/:postId', verifyRoles([ROLES.USER]), getAllCommentInPost)
 
-router.put('/like&unlikeComment/:userId/:commentId', verifyRoles([ROLES.USER]), likeAndUnlikeComment)
+router.put('/likeAndUnlikeComment/:userId/:commentId', verifyRoles([ROLES.USER]), likeAndUnlikeComment)
 
-router.put('/dislike&unDislikeComment/:userId/:commentId', verifyRoles([ROLES.USER]), dislikeAndUnDislikeComment)
+router.put('/dislikeAndUnDislikeComment/:userId/:commentId', verifyRoles([ROLES.USER]), dislikeAndUnDislikeComment)
 
 
 //......................... RESPONSE ROUTES .........................
@@ -44,11 +46,13 @@ router.delete('/deleteResponse/:userId/:responseId', verifyRoles([ROLES.USER]), 
 
 router.get('/getResponse/:commentId/:responseId', verifyRoles([ROLES.USER]), getResponse)
 
-router.get('/getResponseInComment/:userId/:commentId', verifyRoles([ROLES.EDITOR, ROLES.ADMIN]), getAllResponseInComment)
+router.get('/getResponseInComment/:userId/:commentId', verifyRoles([ROLES.USER]), getAllResponseInComment)
 
-router.put('/like&unlikeResponse/:userId/:responseId', verifyRoles([ROLES.USER]), likeAndUnlikeResponse)
+router.get('/getAllResponse/:userId', verifyRoles([ROLES.USER]), getAllResponse)
 
-router.put('/dislike&unDislikeResponse/:userId/:responseId', verifyRoles([ROLES.USER]), dislikeAndUnDislikeResponse)
+router.put('/likeAndUnlikeResponse/:userId/:responseId', verifyRoles([ROLES.USER]), likeAndUnlikeResponse)
+
+router.put('/dislikeAndUnDislikeResponse/:userId/:responseId', verifyRoles([ROLES.USER]), dislikeAndUnDislikeResponse)
 
 module.exports = router
 

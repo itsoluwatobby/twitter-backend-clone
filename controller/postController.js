@@ -27,9 +27,13 @@ exports.updatePost = asyncHandler(async(req, res) => {
 
   const userPost = await Post.findById(postId).exec()
   if(!userPost) return res.status(400).json('you do not have a post')
+
+  const dateTime = sub(new Date(), { minutes: 0}).toISOString();
   
   if(!userPost?.userId.equals(user._id)) return res.sendStatus(401)
   await userPost.updateOne({$set: editPost})
+  await userPost.updateOne({$set: {edited: true}})
+  await userPost.updateOne({$set: {editDate: dateTime}})
   const post = await Post.findById(postId).exec()
 
   post && res.status(201).json(post)
@@ -183,14 +187,18 @@ exports.sharePost = asyncHandler(async(req, res) => {
   if(duplicate) return res.status(400).json('you already shared this post')
 
   if(!Object.values(post?.isShared).includes(sharerId)){
-    await post.updateOne({$push: {isShared: sharerId}})
-    
-    const {isShared, ...rest} = post._doc
-    const sharedDate = sub(new Date(), { minutes: 0}).toISOString();
-    const share = await SharedPosts.create({
-      sharerId, sharedDate, sharedPost: rest
-    })
-    return res.status(201).json(share)
+
+    if(post?.userId.equals(user?._id)){
+      await post.updateOne({$push: {isShared: sharerId}})
+      
+      const {isShared, ...rest} = post._doc
+      const sharedDate = sub(new Date(), { minutes: 0}).toISOString();
+      const share = await SharedPosts.create({
+        sharerId, sharedDate, sharedPost: rest
+      })
+      return res.status(201).json(share)
+    }
+    else return res.status(400).json('post does not belong to user')
   }
   else return res.status(400).json('you already shared this post')
 })
@@ -211,15 +219,34 @@ exports.unSharePost = asyncHandler(async(req, res) => {
   if(!postShared) return res.status(400).json('no shared posts')
 
   if(Object.values(post?.isShared).includes(sharerId)){
-    await post.updateOne({$pull: {isShared: sharerId}})
-    await SharedPosts.deleteOne({_id: postShared._id})
-    
-    return res.status(200).json('you unShared this post')
+
+    if(post?.userId.equals(user?._id)){
+      await post.updateOne({$pull: {isShared: sharerId}})
+      await SharedPosts.deleteOne({_id: postShared._id})
+      
+      return res.status(200).json('you unShared this post')
+    }
+    else return res.status(400).json('post does not belong to user')
   }
   else return res.status(400).json('you already unShared this post')
 })
 
 //get shared post
+exports.getSharedPost = asyncHandler(async(req, res) => {
+  const {sharedPostId, userId} = req.params
+  if(!sharedPostId || !userId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(userId).exec()
+  if(!user) return res.status(403).json('you are unauthorized') 
+
+  const post = await SharedPosts.findById(sharedPostId).exec()
+  if(!post) return res.status(400).json('post not found')
+
+  if(!post?.sharerId.equals(user?._id)) return res.status(400).json('no shared post')
+  res.status(200).json(post)
+})
+
+//get user shared posts
 exports.getUserSharedPosts = asyncHandler(async(req, res) => {
   const {sharerId} = req.params
   if(!sharerId) return res.status(400).json('all fields are required')
@@ -229,6 +256,8 @@ exports.getUserSharedPosts = asyncHandler(async(req, res) => {
 
   const post = await SharedPosts.find({sharerId}).lean()
   if(!post) return res.status(400).json('post not found')
+
+  if(!post?.sharerId.equals(user?._id)) return res.status(400).json('no shared post')
   res.status(200).json(post)
 })
 
