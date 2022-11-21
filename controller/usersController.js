@@ -14,6 +14,10 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
   if(!targetUser) return res.status(403).json('user not found')
 
   if(userInfoUpdate.password){
+    //check if passwords conflicts
+    const match = await bcrypt.compare(userInfoUpdate.password, tarfetUser.password)
+    if(match) return res.status(409).json('same as old, choose a new password!')
+
     const hashPassword = await bcrypt.hash(userInfoUpdate.password, 10)
     await targetUser.updateOne({$set: {password: hashPassword}})
   }
@@ -233,12 +237,16 @@ exports.lockOrUnlockAccount = asyncHandler(async(req, res) => {
   const isAdmin = Object.values(adminUser?.roles).includes('ADMIN')
   if(!isAdmin) return res.status(401).json('unauthorised')
   else if(isAdmin){
+    const dateTime = sub(new Date(), { minutes: 0}).toISOString();
     const user = await User.findById(userId).exec()
+
     if(user.isAccountLocked){
+      await user.updateOne({$set: {dateUnLocked: dateTime}})
       const result = await user.updateOne({$set: {isAccountLocked: false}})
       result && res.status(200).json('account unlocked')
     }
     else{
+      await user.updateOne({$set: {dateLocked: dateTime}})
       const result = await user.updateOne({$set: {isAccountLocked: true}})
       result && res.status(201).json('account locked')
     }

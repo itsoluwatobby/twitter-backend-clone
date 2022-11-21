@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema(
       password: { type: String, required: true, min: 3 },
       isAccountActive: { type: Boolean, default: false },
       isAccountLocked: { type: Boolean, default: false },
+      dateLocked: { type: String, default: '' },
+      dateUnLocked: { type: String, default: '' },
       roles: { type: Array, default: 'USER' },
       followers: { type: Array, default: [] },
       following: { type: Array, default: [] },
