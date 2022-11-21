@@ -247,6 +247,7 @@ exports.lockOrUnlockAccount = asyncHandler(async(req, res) => {
     }
     else{
       await user.updateOne({$set: {dateLocked: dateTime}})
+      await user.updateOne({$set: {dateUnLocked: ''}})
       const result = await user.updateOne({$set: {isAccountLocked: true}})
       result && res.status(201).json('account locked')
     }
