@@ -5,6 +5,12 @@ ___
 ## **Tools Used**
 * Javascript (**_NODE.JS_**)
 
+```javascript
+npm install
+```
+
+---
+
 ## _Some Dependencies Used_
 * bcrypt
 * jsonwebtoken
