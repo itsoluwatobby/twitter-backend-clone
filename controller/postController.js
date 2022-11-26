@@ -32,8 +32,7 @@ exports.updatePost = asyncHandler(async(req, res) => {
   
   if(!userPost?.userId.equals(user._id)) return res.sendStatus(401)
   await userPost.updateOne({$set: editPost})
-  await userPost.updateOne({$set: {edited: true}})
-  await userPost.updateOne({$set: {editDate: dateTime}})
+  await userPost.updateOne({$set: {edited: true, editDate: dateTime}})
   const post = await Post.findById(postId).exec()
 
   post && res.status(201).json(post)

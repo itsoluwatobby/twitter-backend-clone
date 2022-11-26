@@ -39,8 +39,7 @@ exports.updateComments = asyncHandler(async(req, res) => {
 
   if(!targetComment?.userId.equals(user?._id)) return res.sendStatus(403)
   await targetComment.updateOne({$set: editComment})
-  await targetComment.updateOne({$set: {edited: true}})
-  await targetComment.updateOne({$set: {editDate: dateTime}})
+  await targetComment.updateOne({$set: {edited: true, editDate: dateTime}})
 
   const comment = await Comment.findOne({_id: commentId}).exec()
   comment && res.status(201).json(comment)
@@ -248,8 +247,7 @@ exports.editResponse = asyncHandler(async(req, res) => {
   
   if(!targetResponse?.userId.equals(user?._id)) return res.sendStatus(403)
   await targetResponse.updateOne({$set: editResponse})
-  await targetResponse.updateOne({$set: {edited: true}})
-  await targetResponse.updateOne({$set: {editDate: dateTime}})
+  await targetResponse.updateOne({$set: {edited: true, editDate: dateTime}})
 
   const response = await CommentResponse.findOne({_id: responseId}).exec()
   response && res.status(201).json(response)

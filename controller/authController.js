@@ -68,8 +68,7 @@ exports.confirmationHandler = asyncHandler( async(req, res) => {
          if(!getConfirmedUser) return res.status(401).json('bad credentials')
 
          if(getConfirmedUser.isAccountActive !== true){
-            await getConfirmedUser.updateOne({$set: {isAccountActive: true}})
-            await getConfirmedUser.updateOne({$set: {verificationLink: ""}})
+            await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
             .then(() => res.status(200).json('account verification successful'))
             .catch(() => res.sendStatus(500));
          }
@@ -142,11 +141,9 @@ exports.loginHandler = asyncHandler( async(req, res) => {
          {expiresIn: '1d'}
       )
 
-      await getConfirmedUser.updateOne({$set: {status: 'online'}})
-      await getConfirmedUser.updateOne({$set: {refreshToken}})
+      await getConfirmedUser.updateOne({$set: {status: 'online', refreshToken}})
       
       const loggedInUser = await User.findOne({email}).exec()
-
       const { password, isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
          
       res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })//secure: true
@@ -165,8 +162,7 @@ exports.logoutHandler = asyncHandler( async(req, res) => {
       return res.sendStatus(204)
    }
    
-   await user.updateOne({$set: {status: 'offline'}})
-   await user.updateOne({$set: {refreshToken: ''}})
+   await user.updateOne({$set: {status: 'offline', refreshToken: ''}})
 
    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None' });//secure: true
    res.sendStatus(204)
@@ -226,8 +222,7 @@ exports.passwordResetConfirmation = asyncHandler( async(req, res) => {
    if(userPasswordReset.resetPassword){
       const hashPassword = await bcrypt.hash(resetPassword, 10);
 
-      await userPasswordReset.updateOne({$set: {password: hashPassword}})
-      await userPasswordReset.updateOne({$set: {resetPassword: false}})
+      await userPasswordReset.updateOne({$set: {password: hashPassword, resetPassword: false}})
       .then(() => res.status(200).json('password reset successful'))
       .catch(() => res.sendStatus(500));
    }

@@ -33,8 +33,7 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
   }
 
   const dateTime = sub(new Date(), { minutes: 0}).toISOString();
-  await targetUser.updateOne({$set: {edited: true}})
-  await targetUser.updateOne({$set: {editDate: dateTime}})
+  await targetUser.updateOne({$set: {edited: true, editDate: dateTime}})
 
   const user = await User.findById(targetUser._id).select('-password').exec()
   res.status(201).json(user)
@@ -246,8 +245,7 @@ exports.lockOrUnlockAccount = asyncHandler(async(req, res) => {
       result && res.status(200).json('account unlocked')
     }
     else{
-      await user.updateOne({$set: {dateLocked: dateTime}})
-      await user.updateOne({$set: {dateUnLocked: ''}})
+      await user.updateOne({$set: {dateLocked: dateTime, dateUnLocked: ''}})
       const result = await user.updateOne({$set: {isAccountLocked: true}})
       result && res.status(201).json('account locked')
     }
