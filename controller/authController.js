@@ -54,7 +54,7 @@ exports.registerHandler = asyncHandler( async(req, res) => {
       registrationDate: dateTime
    });
     
-   const result = transporter.sendMail(mailOptions, (err, success) => {
+   const result = await transporter.sendMail(mailOptions, (err, success) => {
       if(err) return res.status(400).json({message:'unable to send email', err})
       else res.status(200).json('verification link has been sent to your email for confirmation')
    });
@@ -67,7 +67,7 @@ exports.confirmationHandler = asyncHandler( async(req, res) => {
          const getConfirmedUser = await User.findOne({email: req.email})
          if(!getConfirmedUser) return res.status(401).json('bad credentials')
 
-         if(getConfirmedUser.isAccountActive !== true){
+         if(!getConfirmedUser.isAccountActive){
             await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
             .then(() => res.status(200).json('account verification successful'))
             .catch(() => res.sendStatus(500));
@@ -111,7 +111,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
                `
       };
       await getConfirmedUser.updateOne({$set: {verificationLink}})
-      const result = transporter.sendMail(mailOptions, (err, success) => {
+      const result = await transporter.sendMail(mailOptions, (err, success) => {
          if(err) return res.status(400).json('unable to send email')
          else res.status(200).json('verification link has been sent to your email for confirmation')
       });
@@ -201,7 +201,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
    };
    //save data to db
    await user.updateOne({$set: {resetPassword: true}})
-   const result = transporter.sendMail(mailOptions, (err, success) => {
+   const result = await transporter.sendMail(mailOptions, (err, success) => {
       if(err) return res.status(400).json('unable to send email')
       else res.status(200).json('password reset link has been sent to your email for confirmation')
    });

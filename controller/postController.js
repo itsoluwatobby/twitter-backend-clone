@@ -28,7 +28,7 @@ exports.updatePost = asyncHandler(async(req, res) => {
   const userPost = await Post.findById(postId).exec()
   if(!userPost) return res.status(400).json('you do not have a post')
 
-  const dateTime = sub(new Date(), { minutes: 0}).toISOString();
+  const dateTime = sub(new Date(), { minutes: 0 }).toISOString();
   
   if(!userPost?.userId.equals(user._id)) return res.sendStatus(401)
   await userPost.updateOne({$set: editPost})

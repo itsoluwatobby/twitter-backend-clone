@@ -15,8 +15,8 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
 
   if(userInfoUpdate.password){
     //check if passwords conflicts
-    const match = await bcrypt.compare(userInfoUpdate.password, tarfetUser.password)
-    if(match) return res.status(409).json('same as old, choose a new password!')
+    const match = await bcrypt.compare(userInfoUpdate.password, targetUser.password)
+    if(match) return res.status(409).json('same as old, enter a different password!')
 
     const hashPassword = await bcrypt.hash(userInfoUpdate.password, 10)
     await targetUser.updateOne({$set: {password: hashPassword}})
