@@ -60,9 +60,9 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const token = cookies.jwt
    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
 
-   const usedToken = await User.findOne({refreshToken: token}).exec()
+   const matchingToken = await User.findOne({refreshToken: token}).exec()
    //check if refresh token has used previously
-   if(!usedToken) {
+   if(!matchingToken) {
       jwt.verify(
          token,
          process.env.REFRESH_TOKEN_SECRET,
@@ -77,7 +77,7 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    }
    
    jwt.verify(
-      usedToken.refreshToken,
+      matchingToken.refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
