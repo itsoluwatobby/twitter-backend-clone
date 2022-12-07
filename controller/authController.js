@@ -64,15 +64,15 @@ exports.registerHandler = asyncHandler( async(req, res) => {
 exports.confirmationHandler = asyncHandler( async(req, res) => {
    //verify confirmation link
       //if(req.firstName || req.email){
-         const getConfirmedUser = await User.findOne({email: req.email})
-         if(!getConfirmedUser) return res.status(401).json('bad credentials')
+   const getConfirmedUser = await User.findOne({email: req.email})
+   if(!getConfirmedUser) return res.status(401).json('bad credentials')
 
-         if(!getConfirmedUser.isAccountActive){
-            await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
-            .then(() => res.status(200).json('account verification successful'))
-            .catch(() => res.sendStatus(500));
-         }
-         else res.status(200).json('your account has already been verified')
+   if(!getConfirmedUser.isAccountActive){
+      await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
+      .then(() => res.status(200).json('account verification successful'))
+      .catch(() => res.sendStatus(500));
+   }
+   else res.status(200).json('your account has already been verified')
 })
 
 exports.loginHandler = asyncHandler( async(req, res) => {
@@ -146,7 +146,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
       const loggedInUser = await User.findOne({email}).exec()
       const { password, isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
          
-      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })//secure: true
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })//secure: true
       res.status(200).json({rest, accessToken});
    }
 })
@@ -158,13 +158,13 @@ exports.logoutHandler = asyncHandler( async(req, res) => {
    //find user by refresh token
    const user = await User.findOne({refreshToken}).exec();
    if(!user) {
-      res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', });//secure: true
+      res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
       return res.sendStatus(204)
    }
    
    await user.updateOne({$set: {status: 'offline', refreshToken: ''}})
 
-   res.clearCookie('jwt', { httpOnly: true, sameSite: 'None' });//secure: true
+   res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
    res.sendStatus(204)
 })
 
@@ -260,6 +260,6 @@ exports.getNewAccessToken = asyncHandler( async(req, res) => {
 
    await user.updateOne({$set: {refreshToken}})
       
-   res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })//secure: true
+   res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })//secure: true
    res.status(200).json(accessToken);
 })

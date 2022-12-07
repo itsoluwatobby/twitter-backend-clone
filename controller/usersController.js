@@ -104,7 +104,7 @@ exports.toggleEditorRole = asyncHandler(async(req, res) => {
   }
 })
 
-//delete user by currentUser or admin AND also delete user posts
+//delete user by currentUser AND also delete user posts
 exports.deleteAccount = asyncHandler(async(req, res) => {
     const {userId} = req.params
     if(!userId) return res.status(403).json('you are unauthorised')
@@ -119,6 +119,7 @@ exports.deleteAccount = asyncHandler(async(req, res) => {
     result && res.sendStatus(204)
 })
 
+//delete user account by admin AND also delete user posts
 exports.deleteAccountByAdmin = asyncHandler(async(req, res) => {
   const {adminId, userId} = req.query
   if(!adminId || !userId) return res.status(403).json('you are unauthorised')
@@ -240,14 +241,12 @@ exports.lockOrUnlockAccount = asyncHandler(async(req, res) => {
     const user = await User.findById(userId).exec()
 
     if(user.isAccountLocked){
-      await user.updateOne({$set: {dateUnLocked: dateTime}})
-      const result = await user.updateOne({$set: {isAccountLocked: false}})
-      result && res.status(200).json('account unlocked')
+      await user.updateOne({$set: {dateUnLocked: dateTime, isAccountLocked: false}})
+      res.status(200).json('account unlocked')
     }
     else{
-      await user.updateOne({$set: {dateLocked: dateTime, dateUnLocked: ''}})
-      const result = await user.updateOne({$set: {isAccountLocked: true}})
-      result && res.status(201).json('account locked')
+      await user.updateOne({$set: {dateLocked: dateTime, dateUnLocked: '', isAccountLocked: true}})
+      res.status(201).json('account locked')
     }
   }
 })

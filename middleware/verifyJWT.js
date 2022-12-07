@@ -58,13 +58,26 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const cookies = req.cookies;
    if(!cookies?.jwt) return res.status(403).json('bad credentials')
    const token = cookies.jwt
+   res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
 
+   const usedToken = await User.findOne({refreshToken: token}).exec()
    //check if refresh token has used previously
-   const matchingToken = await User.findOne({refreshToken: token}).exec()
-   if(!matchingToken) return res.status(403).json('bad credentials');
+   if(!usedToken) {
+      jwt.verify(
+         token,
+         process.env.REFRESH_TOKEN_SECRET,
+         async (error, decoded) => {
+            if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
+            if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
+            const hackedUser = await User.findOne({email: decoded.email}).exec()
+            await hackedUser.updateOne({refreshToken: ''}) 
+         }
+      )
+      return res.status(403).json('bad credentials');
+   }
    
    jwt.verify(
-      matchingToken.refreshToken,
+      usedToken.refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
