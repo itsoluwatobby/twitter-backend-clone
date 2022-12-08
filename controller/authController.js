@@ -261,5 +261,5 @@ exports.getNewAccessToken = asyncHandler( async(req, res) => {
    await user.updateOne({$set: {refreshToken}})
       
    res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })//secure: true
-   res.status(200).json(accessToken);
+   res.status(200).json({ roles, accessToken });
 })

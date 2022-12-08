@@ -47,8 +47,8 @@ exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('Expired token')
          else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
-         req.email = decoded.userInfo.email
-         req.roles = decoded.userInfo.roles
+         req.email = decoded.userInfo?.email
+         req.roles = decoded.userInfo?.roles
       }
    )
    next();
@@ -82,7 +82,7 @@ exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
          else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
-         req.email = decoded.userInfo.email
+         req.email = decoded.userInfo?.email
       }
    )
    next();
