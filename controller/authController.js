@@ -33,7 +33,7 @@ exports.registerHandler = asyncHandler( async(req, res) => {
       {expiresIn: '15m'}
    )
 
-   const verificationLink = `${process.env.ROUTE_LINK}/account_confirmation?token=${token}`
+   const verificationLink = `${process.env.ROUTE_LINK}/users/account_confirmation?token=${token}`
 
    const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
@@ -98,7 +98,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
          {expiresIn: '25m'}
       )
 
-      const verificationLink = `${process.env.ROUTE_LINK}/account_confirmation?token=${token}`
+      const verificationLink = `${process.env.ROUTE_LINK}/users/account_confirmation?token=${token}`
 
       const mailOptions = {
          from: process.env.EMAIL_ADDRESS,
@@ -187,7 +187,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
       {expiresIn: '20m'}
    )
 
-   const resetLink = `${process.env.ROUTE_LINK}/password_reset_confirmation?token=${token}`
+   const resetLink = `${process.env.ROUTE_LINK}/users/password_reset_confirmation?token=${token}`
 
    const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
@@ -208,7 +208,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
 })
 
 exports.passwordConfirmationLink = asyncHandler( async(req, res) => {
-   res.status(200).json({status: true})
+   res.status(302).redirect(`${process.env.REDIRECT_LINK}/new_password`)
 })
 
 exports.passwordResetConfirmation = asyncHandler( async(req, res) => {
