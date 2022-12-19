@@ -69,7 +69,7 @@ Admin role has the ability of granting additional roles to a specific user
 * [x] Role and token based authentication
 * [x] following and unfollowing a user
 * [x] Granting of roles to users by only admin
-* [x] Deleting of posts/users by only admin
+* [x] Deleting of tweets/users by only admin
 * [x] Locking and Unlocking of users account by admin by only admin
 * [x] Users can update their info
 * [x] Users can delete their account
