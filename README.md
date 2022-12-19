@@ -55,6 +55,7 @@ Admin role has the ability of granting additional roles to a specific user
 * [x] Commenting on tweets
 * [x] Edit comment on tweets
 * [x] delete comment on tweets
+* [x] delete comments and responses by tweets author
 * [x] Like and unlike comments on tweets
 * [x] Replying comments on comment
 * [x] Edit response on comment
