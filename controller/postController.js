@@ -148,26 +148,26 @@ exports.likeAndUnlikePosts = asyncHandler(async(req, res) => {
 })
 
 //like and unlike a post
-exports.dislikeAndUnDislikePosts = asyncHandler(async(req, res) => {
-  const {userId, postId} = req.params
-  if(!userId || !postId) return res.status(400).json('all fields are required')
+// exports.dislikeAndUnDislikePosts = asyncHandler(async(req, res) => {
+//   const {userId, postId} = req.params
+//   if(!userId || !postId) return res.status(400).json('all fields are required')
 
-  const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
+//   const user = await User.findById(userId).exec()
+//   if(!user) return res.status(403).json('user not found') 
 
-  const post = await Post.findById(postId).exec()
-  if(!post) return res.status(400).json('posts not found')
+//   const post = await Post.findById(postId).exec()
+//   if(!post) return res.status(400).json('posts not found')
 
-  if(!Object.values(post?.disLikes).includes(userId)){
-    await post.updateOne({$push: {disLikes: userId}})
-    await post.updateOne({$pull: {likes: userId}})
-    return res.status(201).json('you disliked this post')
-  }
-  else{
-    await post.updateOne({$pull: {disLikes: userId}})
-    return res.status(201).json('you unDisliked this post')
-  }
-})
+//   if(!Object.values(post?.disLikes).includes(userId)){
+//     await post.updateOne({$push: {disLikes: userId}})
+//     await post.updateOne({$pull: {likes: userId}})
+//     return res.status(201).json('you disliked this post')
+//   }
+//   else{
+//     await post.updateOne({$pull: {disLikes: userId}})
+//     return res.status(201).json('you unDisliked this post')
+//   }
+// })
 
 //share a post
 exports.sharePost = asyncHandler(async(req, res) => {

@@ -69,10 +69,10 @@ exports.confirmationHandler = asyncHandler( async(req, res) => {
 
    if(!getConfirmedUser.isAccountActive){
       await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
-      .then(() => res.status(200).json('account verification successful'))
+      .then(() => res.status(302).redirect(`${process.env.ROUTE_LINK}/successful_verification`))
       .catch(() => res.sendStatus(500));
    }
-   else res.status(200).json('your account has already been verified')
+   else res.status(303).redirect(`${process.env.ROUTE_LINK}/successful_verification`)
 })
 
 exports.loginHandler = asyncHandler( async(req, res) => {
@@ -208,7 +208,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
 })
 
 exports.passwordConfirmationLink = asyncHandler( async(req, res) => {
-   res.status(302).redirect(`${process.env.REDIRECT_LINK}/new_password`)
+   res.status(302).redirect(`${process.env.REDIRECT_LINK}/new_password?email=${req.email}`)
 })
 
 exports.passwordResetConfirmation = asyncHandler( async(req, res) => {
@@ -261,5 +261,5 @@ exports.getNewAccessToken = asyncHandler( async(req, res) => {
    await user.updateOne({$set: {refreshToken}})
       
    res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })//secure: true
-   res.status(200).json({ roles, accessToken });
+   res.status(200).json(accessToken);
 })

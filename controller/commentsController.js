@@ -77,6 +77,26 @@ exports.deleteCommentByAdmin = asyncHandler(async(req, res) => {
   res.status(204).json('comment deleted')
 })
 
+//delete comment by post owner
+exports.deleteCommentByPostOwner = asyncHandler(async(req, res) => {
+  const {ownerId, commentId} = req.params
+  if(!ownerId || !commentId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(ownerId).exec()
+  if(!user) return res.status(403).json('user not found') 
+  
+  const comment = await Comment.findById(commentId).exec()
+  if(!comment) return res.status(400).json('comment not found')
+  
+  //get target post
+  const targetPost = await Post.findOne(comment?.postId).exec()
+  if(!targetPost) return res.status(400).json('comment not found')
+  
+  if(!targetPost?.userId.equals(ownerId)) return res.status(401).json('you are not authorised')
+  await comment.deleteOne()
+  res.status(204).json('comment deleted')
+})
+
 //delete user comment on post by admin
 exports.deleteUsersCommentsByAdmin = asyncHandler(async(req, res) => {
   const {adminId, postId} = req.query
@@ -225,6 +245,29 @@ exports.deleteResponse = asyncHandler(async(req, res) => {
 
   if(!userResponse?.userId.equals(user?._id)) return res.sendStatus(403)
   await userResponse.deleteOne()
+  res.status(204).json('response deleted')
+})
+
+//delete response by post owner
+exports.deleteResponseByPostOwner = asyncHandler(async(req, res) => {
+  const {ownerId, commentId, responseId} = req.params
+  if(!ownerId || !commentId || !responseId) return res.status(400).json('all fields are required')
+
+  const user = await User.findById(ownerId).exec()
+  if(!user) return res.status(403).json('user not found') 
+  
+  const targetComment = await Comment.findById(commentId).exec()
+  if(!targetComment) return res.status(400).json('comment not found')
+  
+  const targetResponse = await CommentResponse.findById(responseId).exec()
+  if(!targetResponse) return res.status(400).json('response not found')
+  
+  //get target post
+  const targetPost = await Post.findOne(targetComment?.postId).exec()
+  if(!targetPost) return res.status(400).json('comment not found')
+  
+  if(!targetPost?.userId.equals(ownerId)) return res.status(401).json('you are not authorised')
+  await targetResponse.deleteOne()
   res.status(204).json('response deleted')
 })
 

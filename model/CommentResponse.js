@@ -7,6 +7,7 @@ const responseSchema = new mongoose.Schema(
       body: { type: String, required: true },
       thumbsUp: { type: Array, default: [] },
       thumbsUpDown: { type: Array, default: [] },
+      responseDate: { type: String, default: '' },
       edited: { type: Boolean, default: false },
       editDate: { type: String, default: '' }
    },

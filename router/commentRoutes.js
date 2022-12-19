@@ -7,7 +7,7 @@ const {
   deleteUsersCommentsByAdmin, getUserCommentsByAdmin, 
   getComment, getAllCommentInPost, likeAndUnlikeComment, 
   dislikeAndUnDislikeComment, createResponse, editResponse, 
-  deleteResponse, getResponse, getAllResponseInComment, likeAndUnlikeResponse, dislikeAndUnDislikeResponse, getAllComments, getAllResponse} = require('../controller/commentsController');
+  deleteResponse, getResponse, getAllResponseInComment, likeAndUnlikeResponse, dislikeAndUnDislikeResponse, getAllComments, getAllResponse, deleteCommentByPostOwner, deleteResponseByPostOwner} = require('../controller/commentsController');
 
 
 //................... COMMENT ROUTES ........................
@@ -17,6 +17,8 @@ router.post('/createComment', verifyRoles([ROLES.USER]), createComment)
 router.put('/updateComment/:commentId', verifyRoles([ROLES.USER]), updateComments)
 
 router.delete('/deleteComment/:userId/:commentId', verifyRoles([ROLES.USER]), deleteComment)
+
+router.delete('/deleteCommentByPostOwner/:ownerId/:commentId', verifyRoles([ROLES.USER]), deleteCommentByPostOwner)
 
 router.delete('/adminCommentDelete/:adminId/:commentId', verifyRoles([ROLES.ADMIN]), deleteCommentByAdmin)
 
@@ -43,6 +45,8 @@ router.post('/createResponse', verifyRoles([ROLES.USER]), createResponse)
 router.put('/editResponse/:responseId', verifyRoles([ROLES.USER]), editResponse)
 
 router.delete('/deleteResponse/:userId/:responseId', verifyRoles([ROLES.USER]), deleteResponse)
+
+router.delete('/deleteResponseByPostOwner/:ownerId/:commentId/:responseId', verifyRoles([ROLES.USER]), deleteResponseByPostOwner)
 
 router.get('/getResponse/:commentId/:responseId', verifyRoles([ROLES.USER]), getResponse)
 

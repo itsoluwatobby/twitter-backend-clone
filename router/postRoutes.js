@@ -5,10 +5,9 @@ const {
    createPosts, updatePost, deletePosts, 
    deletePostByAdmin, deleteUsersPostsByAdmin, 
    getPost, getAllPosts, getUserPosts, 
-   likeAndUnlikePosts, dislikeAndUnDislikePosts, 
-   sharePost, unSharePost, getUserSharedPosts, 
-   getAllSharedPosts, 
-   getSharedPost} = require('../controller/postController');
+   likeAndUnlikePosts, sharePost, unSharePost, 
+   getUserSharedPosts, getAllSharedPosts, getSharedPost
+} = require('../controller/postController');
 
 router.post('/createPost', verifyRoles([ROLES.USER]), createPosts)
 
@@ -29,7 +28,7 @@ router.get('/getUserPosts/:userId', verifyRoles([ROLES.USER]), getUserPosts)
 
 router.put('/likeAndUnlikePost/:userId/:postId', verifyRoles([ROLES.USER]), likeAndUnlikePosts)
 
-router.put('/dislikeAndUnDislikePost/:userId/:postId', verifyRoles([ROLES.USER]), dislikeAndUnDislikePosts)
+//router.put('/dislikeAndUnDislikePost/:userId/:postId', verifyRoles([ROLES.USER]), dislikeAndUnDislikePosts)
 
 // query sharerId, ownerId and postId
 router.post('/sharePost', verifyRoles([ROLES.USER]), sharePost)
