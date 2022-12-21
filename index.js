@@ -13,7 +13,7 @@ const { accessTokenVerificationJWT } = require('./middleware/verifyJWT');
 const { logEvents, errorLog } = require('./middleware/logger');
 const PORT = process.env.PORT || 5300
 
-app.use(logEvents)
+//app.use(logEvents)
 
 app.use(cors(corsOptions))
 
