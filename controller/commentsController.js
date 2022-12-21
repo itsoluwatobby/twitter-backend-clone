@@ -12,6 +12,7 @@ exports.createComment = asyncHandler(async(req, res) => {
 
   const user = await User.findById(newComment?.userId).exec()
   if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const post = await Post.findById(newComment?.postId).exec()
   if(!post) return res.status(403).json('post not found')
@@ -28,6 +29,7 @@ exports.updateComments = asyncHandler(async(req, res) => {
 
   const user = await User.findById(editComment.userId).exec()
   if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const post = await Post.findById(editComment.postId).exec()
   if(!post) return res.status(403).json('post not found')
@@ -84,6 +86,7 @@ exports.deleteCommentByPostOwner = asyncHandler(async(req, res) => {
 
   const user = await User.findById(ownerId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const comment = await Comment.findById(commentId).exec()
   if(!comment) return res.status(400).json('comment not found')
@@ -179,6 +182,7 @@ exports.likeAndUnlikeComment = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const comment = await Comment.findById(commentId).exec()
   if(!comment) return res.status(400).json('comments not found')
@@ -201,6 +205,7 @@ exports.dislikeAndUnDislikeComment = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const comment = await Comment.findById(commentId).exec()
   if(!comment) return res.status(400).json('comments not found')
@@ -224,6 +229,7 @@ exports.createResponse = asyncHandler(async(req, res) => {
 
   const user = await User.findById(newResponse?.userId).exec()
   if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const comment = await Comment.findById(newResponse?.commentId).exec()
   if(!comment) return res.status(403).json('comment not found')
@@ -279,6 +285,7 @@ exports.editResponse = asyncHandler(async(req, res) => {
 
   const user = await User.findById(editResponse.userId).exec()
   if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const comment = await Comment.findById(editResponse.commentId).exec()
   if(!comment) return res.status(403).json('comment not found')
@@ -347,6 +354,7 @@ exports.likeAndUnlikeResponse = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const response = await CommentResponse.findById(responseId).exec()
   if(!response) return res.status(400).json('response not found')
@@ -369,6 +377,7 @@ exports.dislikeAndUnDislikeResponse = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const response = await CommentResponse.findById(responseId).exec()
   if(!response) return res.status(400).json('response not found')

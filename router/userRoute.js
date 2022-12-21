@@ -11,20 +11,20 @@ const {
 
 router.put('/updateInfo/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), updateUserInfo)
 
-router.delete('/deleteHobby/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), deleteHobbies)
+router.patch('/remove_hobby/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR]), deleteHobbies)
 
 router.put('/toggleAdminRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), toggleAdminRole)
 
 router.put('/toggleEditorRole/:adminId/:userId', verifyRoles([ROLES.ADMIN]), toggleEditorRole)
 
-router.delete('/deleteAccount/:userId', verifyRoles([ROLES.USER]), deleteAccount)
+router.delete('/delete_myaccount/:userId', verifyRoles([ROLES.USER]), deleteAccount)
 
 //query adminId and userId
 router.delete('/deleteAccount', verifyRoles([ROLES.ADMIN]), deleteAccountByAdmin)
 
-router.get('/getUser/:userId', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getUser)
+router.get('/getUser/:userId', verifyRoles([ROLES.USER]), getUser)
 
-router.get('/getUsers', verifyRoles([ROLES.ADMIN, ROLES.EDITOR, ROLES.USER]), getAllUsers)
+router.get('/getUsers', verifyRoles([ROLES.USER]), getAllUsers)
 
 //query followerId and followingId
 router.put('/followUser', verifyRoles([ROLES.USER]), followUser)

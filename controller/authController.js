@@ -30,7 +30,7 @@ exports.registerHandler = asyncHandler( async(req, res) => {
          userInfo:{ firstName, email }
       },
       process.env.ACCOUNT_CONFIRMATION_TOKEN_SECRET,
-      {expiresIn: '15m'}
+      {expiresIn: '25m'}
    )
 
    const verificationLink = `${process.env.ROUTE_LINK}/users/account_confirmation?token=${token}`
@@ -40,7 +40,13 @@ exports.registerHandler = asyncHandler( async(req, res) => {
       to: email,
       subject: `ACCOUNT CONFIRMATION FOR ${firstName} ${lastName}`,
       html: `<h2>Please Tap the Link below To Confirm Your Account</h2><br/>
-            <p>Link expires in 15 minutes, please confirm now</p>
+            <p>Link expires in 25 minutes, please confirm now</p>
+            <a href=${verificationLink} target=_blank style='text-decoration:none;'>
+               <button style='padding:1rem;   padding-left:2rem; padding-right:2rem; cursor:pointer; background-color: teal; border:none; border-radius:10px; font-size: 18px'>
+                  Account Verification
+               </button>
+            </a>
+            <p>Or copy the link below to your browser</p>
             <p>${verificationLink}</p><br/>
             <span>Please keep link private, it contains some sensitive information about you.</span>
             `
@@ -69,10 +75,10 @@ exports.confirmationHandler = asyncHandler( async(req, res) => {
 
    if(!getConfirmedUser.isAccountActive){
       await getConfirmedUser.updateOne({$set: {isAccountActive: true, verificationLink: ""}})
-      .then(() => res.status(302).redirect(`${process.env.ROUTE_LINK}/successful_verification`))
+      .then(() => res.status(302).redirect(`${process.env.REDIRECT_LINK}/successful_verification?email=${req.email}`))
       .catch(() => res.sendStatus(500));
    }
-   else res.status(303).redirect(`${process.env.ROUTE_LINK}/successful_verification`)
+   else res.status(303).redirect(`${process.env.REDIRECT_LINK}/successful_verification?email=${req.email}`)
 })
 
 exports.loginHandler = asyncHandler( async(req, res) => {
@@ -104,8 +110,14 @@ exports.loginHandler = asyncHandler( async(req, res) => {
          from: process.env.EMAIL_ADDRESS,
          to: email,
          subject: `ACCOUNT CONFIRMATION FOR ${getConfirmedUser.firstName} ${getConfirmedUser.lastName}`,
-         html: `<h2>Please Tap the Link below To Confirm Your Account</h2><br/>
+         html: `<h3>Please Tap the Link below To Confirm Your Account</h3><br/>
                <p>Link expires in 25 minutes, please confirm now</p>
+               <a href=${verificationLink} target=_blank style='text-decoration:none;'>
+                  <button style='padding:1rem;   padding-left:2rem; padding-right:2rem; cursor:pointer; background-color: teal; border:none; border-radius:10px; font-size: 18px'>
+                     Account Verification
+                  </button>
+               </a>
+               <p>Or copy the link below to your browser</p>
                <p>${verificationLink}</p><br/>
                <span>Please keep link private, it contains some sensitive information about you.</span>
                `
@@ -141,7 +153,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
          {expiresIn: '1d'}
       )
 
-      await getConfirmedUser.updateOne({$set: {status: 'online', refreshToken}})
+      await getConfirmedUser.updateOne({$set: {status: 'online', refreshToken, lastSeen: '', resetPassword: false}})
       
       const loggedInUser = await User.findOne({email}).exec()
       const { password, isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
@@ -161,8 +173,8 @@ exports.logoutHandler = asyncHandler( async(req, res) => {
       res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
       return res.sendStatus(204)
    }
-   
-   await user.updateOne({$set: {status: 'offline', refreshToken: ''}})
+   const dateTime = sub(new Date(), { minutes: 0}).toISOString();
+   await user.updateOne({$set: {status: 'offline', refreshToken: '', lastSeen: dateTime}})
 
    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
    res.sendStatus(204)
@@ -174,6 +186,8 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
    
    const user = await User.findOne({email}).exec();
    if(!user) return res.status(403).json('bad credentials');
+   
+   if(user?.isAccountLocked) return res.status(403).json('your account is locked')
    const roles = Object.values(user.roles)
 
    const token = await jwt.sign(
@@ -192,9 +206,15 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
    const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
       to: user.email,
-      subject: `PASSWORD RESET TOKEN FOR ${user.firstName} ${user.lastName}`,
-      html: `<h2>Please Tap The Link Below To Reset Your Password</h2><br/>
-            <p>Link expires in 20 minutes, Reset password</p>
+      subject: `Password reset token for ${user.firstName} ${user.lastName}`,
+      html: `<h3>Please Tap The Link Below To Reset Your Password</h3><br/>
+            <p>Link expires in 20 minutes. Link can only used once</p>
+            <a href=${resetLink} target=_blank style='text-decoration:none;'>
+               <button style='padding:1rem; padding-left:2rem; padding-right:2rem; cursor:pointer; background-color: lightblue; border:none; border-radius:10px; font-size: 18px'>
+                  Reset Password
+               </button>
+            </a>
+            <p>Or copy the link below to your browser</p>
             <p>${resetLink}</p><br/>
             <span>Please keep link private, it contains some sensitive information about you.</span>
             `
@@ -212,15 +232,19 @@ exports.passwordConfirmationLink = asyncHandler( async(req, res) => {
 })
 
 exports.passwordResetConfirmation = asyncHandler( async(req, res) => {
-   const {email} = req.query
-   const {resetPassword} = req.body
+   const {email, resetPass} = req.body
+   console.log(req.body)
    if(!email) return res.status(401).json('unauthorized')
-   if(!resetPassword) return res.status(401).json('new password required')
+   if(!resetPass) return res.status(400).json('new password required')
+
    const userPasswordReset = await User.findOne({email}).exec()
    if(!userPasswordReset) return res.status(401).json('bad credentials')
 
+   const samePassword = await bcrypt.compare(resetPass, userPasswordReset.password);
+   if(samePassword) return res.status(409).json('same as old password')
+
    if(userPasswordReset.resetPassword){
-      const hashPassword = await bcrypt.hash(resetPassword, 10);
+      const hashPassword = await bcrypt.hash(resetPass, 10);
 
       await userPasswordReset.updateOne({$set: {password: hashPassword, resetPassword: false}})
       .then(() => res.status(200).json('password reset successful'))

@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema(
       resetPassword: { type: Boolean, default: false },
       refreshToken: { type: String, default: '' },
       edited: { type: Boolean, default: false },
-      editDate: { type: String, default: '' }
+      editDate: { type: String, default: '' },
+      lastSeen: { type: String, default: '' }
    },
    {minimize: false},
    {timestamps: true}

@@ -26,6 +26,6 @@ router.get('/logout', logoutHandler)
 //password reset and confirmation route
 router.post('/reset_password', passwordResetHandler)
 router.get('/password_reset_confirmation', passwordVerificationJWT, passwordConfirmationLink)
-router.patch('/password_confirmation', passwordResetConfirmation)
+router.put('/password_confirmation', passwordResetConfirmation)
 
 module.exports = router;

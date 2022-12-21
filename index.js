@@ -36,10 +36,10 @@ app.use(accessTokenVerificationJWT)
 app.use('/users', require('./router/userRoute'))
 
 //post route
-app.use('/posts', require('./router/postRoutes'))
+app.use('/tweets', require('./router/postRoutes'))
 
 //comment route
-app.use('/posts', require('./router/commentRoutes'))
+app.use('/tweets', require('./router/commentRoutes'))
 
 app.all('*', (req, res) => {
    res.sendFile(path.join(__dirname, 'public', '404.html'))

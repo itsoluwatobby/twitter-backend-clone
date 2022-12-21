@@ -11,6 +11,7 @@ exports.createPosts = asyncHandler(async(req, res) => {
 
   const user = await User.findById(newPost.userId).exec()
   if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
   const post = await Post.create(newPost)
 
   post && res.status(201).json(post)
@@ -24,6 +25,7 @@ exports.updatePost = asyncHandler(async(req, res) => {
 
   const user = await User.findOne({_id: editPost.userId}).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const userPost = await Post.findById(postId).exec()
   if(!userPost) return res.status(400).json('you do not have a post')
@@ -45,6 +47,7 @@ exports.deletePosts = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const userPost = await Post.findById(postId).exec()
   if(!userPost) return res.status(400).json('you do not have a post')
@@ -91,7 +94,6 @@ exports.deleteUsersPostsByAdmin = asyncHandler(async(req, res) => {
 exports.getPost = asyncHandler(async(req, res) => {
   const {postId} = req.params
   if(!postId) return res.status(400).json('all fields are required')
-
   // const user = await User.findById(userId).exec()
   // if(!user) return res.status(403).json('user not found') 
   const post = await Post.findById(postId).exec()
@@ -106,6 +108,7 @@ exports.getUserPosts = asyncHandler(async(req, res) => {
 
   const user = await User.findById(userId).exec()
   if(!user) return res.status(403).json('user not found') 
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const posts = await Post.find({userId: user._id}).lean()
   if(!posts?.length) return res.status(400).json('posts not found')
@@ -118,7 +121,8 @@ exports.getAllPosts = asyncHandler(async(req, res) => {
   if(!userId) return res.status(400).json('all fields are required')
 
   const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
+  if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const posts = await Post.find().lean()
   if(!posts?.length) return res.status(400).json('posts not found')
@@ -131,7 +135,8 @@ exports.likeAndUnlikePosts = asyncHandler(async(req, res) => {
   if(!userId || !postId) return res.status(400).json('all fields are required')
 
   const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found') 
+  if(!user) return res.status(403).json('user not found')
+  if(user?.isAccountLocked) return res.status(403).json('your account is locked') 
 
   const post = await Post.findById(postId).exec()
   if(!post) return res.status(400).json('posts not found')
@@ -177,7 +182,7 @@ exports.sharePost = asyncHandler(async(req, res) => {
   //user post
   const user = await User.findById(ownerId).exec()
   if(!user) return res.status(403).json('user not found') 
-
+  
   const post = await Post.findById(postId).exec()
   if(!post) return res.status(400).json('posts not found')
 

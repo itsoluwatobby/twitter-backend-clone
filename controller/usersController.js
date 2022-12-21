@@ -12,6 +12,7 @@ exports.updateUserInfo = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).exec()
   if(!targetUser) return res.status(403).json('user not found')
+  if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
   if(userInfoUpdate.password){
     //check if passwords conflicts
@@ -47,6 +48,7 @@ exports.deleteHobbies = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).exec()
   if(!targetUser) return res.status(403).json('user not found')
+  if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const filteredHobbies = hobbies.filter(hob => targetUser.hobbies.includes(hob))
 
@@ -111,6 +113,7 @@ exports.deleteAccount = asyncHandler(async(req, res) => {
 
     const targetUser = await User.findById(userId).exec()
     if(!targetUser) return res.status(403).json('user not found')
+    if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
     const userPosts = await Post.find({userId: targetUser._id}).lean()
 
@@ -158,6 +161,7 @@ exports.getAllUsers = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).exec()
   if(!targetUser) return res.status(403).json('user not found')
+  if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
   
   const allUsers = await User.find().select('-password').lean()
   if(!allUsers?.length) return res.status(403).json('users not found')
@@ -177,6 +181,8 @@ exports.followUser = asyncHandler(async(req, res) => {
   if(!followerId || !followingId) return res.status(403).json('all fields are required')
 
   const followingUser = await User.findById(followerId).exec()
+  if(followingUser?.isAccountLocked) return res.status(403).json('your account is locked')
+
   const followedUser = await User.findById(followingId).exec()
   if(!followingUser || !followedUser) return res.status(403).json('user not found')
 
@@ -194,6 +200,8 @@ exports.unfollowUser = asyncHandler(async(req, res) => {
   if(!followerId || !followingId) return res.status(403).json('all fields are required')
 
   const followingUser = await User.findById(followerId).exec()
+  if(followingUser?.isAccountLocked) return res.status(403).json('your account is locked')
+
   const followedUser = await User.findById(followingId).exec()
   if(!followingUser || !followedUser) return res.status(403).json('user not found')
 
@@ -212,6 +220,7 @@ exports.userFriends = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).select('-password').exec()
   if(!targetUser) return res.status(403).json('user not found')
+  if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
   const friends = await Promise.all(targetUser?.following.map(friendId => {
     return User.findById(friendId).select('-password').lean()
