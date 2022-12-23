@@ -7,7 +7,7 @@ const { sub } = require('date-fns');
 //create a post
 exports.createPosts = asyncHandler(async(req, res) => {
   const newPost = req.body
-  if(!newPost?.userId || !newPost?.title || !newPost.body || !newPost?.postDate) return res.status(400).json('all fields are required')
+  if(!newPost?.userId || !newPost.body || !newPost?.postDate) return res.status(400).json('all fields are required')
 
   const user = await User.findById(newPost.userId).exec()
   if(!user) return res.status(403).json('user not found')

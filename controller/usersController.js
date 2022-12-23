@@ -1,5 +1,8 @@
 const User = require('../model/Users');
 const Post = require('../model/Posts');
+const Comment = require('../model/Comments');
+const CommentResponse = require('../model/CommentResponse');
+const SharedPost = require('../model/SharedPosts');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
 const { sub } = require('date-fns')
@@ -116,7 +119,7 @@ exports.deleteAccount = asyncHandler(async(req, res) => {
     if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
     const userPosts = await Post.find({userId: targetUser._id}).lean()
-
+    
     userPosts?.length && await userPosts.deleteMany()
     const result = await targetUser.deleteOne()
     result && res.sendStatus(204)
@@ -150,14 +153,14 @@ exports.getUser = asyncHandler(async(req, res) => {
 
   const targetUser = await User.findById(userId).select('-password').exec()
   if(!targetUser) return res.status(403).json('user not found')
-  const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = targetUser._doc;
+  const { verificationLink, resetPassword, refreshToken, ...rest } = targetUser._doc;
   res.status(200).json(rest)
 })
 
 //get all users
 exports.getAllUsers = asyncHandler(async(req, res) => {
   const {userId} = req.query
-  if(!userId) return res.status(403).json('you are not authorised')
+  if(!userId) return res.status(400).json('you are not authorised')
 
   const targetUser = await User.findById(userId).exec()
   if(!targetUser) return res.status(403).json('user not found')
@@ -168,7 +171,7 @@ exports.getAllUsers = asyncHandler(async(req, res) => {
 
   let users = []
   await allUsers.map(user => {
-    const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = user;
+    const { verificationLink, resetPassword, refreshToken, ...rest } = user;
     return users.push(rest)
   })
   
@@ -229,7 +232,7 @@ exports.userFriends = asyncHandler(async(req, res) => {
 
   let friendList = []
   await friends.map(friend => {
-    const { isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, refreshToken, ...rest } = friend
+    const { verificationLink, resetPassword, refreshToken, ...rest } = friend
     friendList.push(rest)
   })
   res.status(200).json(friendList);

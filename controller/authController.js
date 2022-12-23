@@ -156,7 +156,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
       await getConfirmedUser.updateOne({$set: {status: 'online', refreshToken, lastSeen: '', resetPassword: false}})
       
       const loggedInUser = await User.findOne({email}).exec()
-      const { password, isAccountActive, isAccountLocked, registrationDate, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
+      const { password, verificationLink, resetPassword, ...rest } = loggedInUser._doc;
          
       res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })//secure: true
       res.status(200).json({rest, accessToken});
@@ -186,7 +186,7 @@ exports.passwordResetHandler = asyncHandler( async(req, res) => {
    
    const user = await User.findOne({email}).exec();
    if(!user) return res.status(403).json('bad credentials');
-   
+
    if(user?.isAccountLocked) return res.status(403).json('your account is locked')
    const roles = Object.values(user.roles)
 
@@ -233,7 +233,7 @@ exports.passwordConfirmationLink = asyncHandler( async(req, res) => {
 
 exports.passwordResetConfirmation = asyncHandler( async(req, res) => {
    const {email, resetPass} = req.body
-   console.log(req.body)
+   
    if(!email) return res.status(401).json('unauthorized')
    if(!resetPass) return res.status(400).json('new password required')
 

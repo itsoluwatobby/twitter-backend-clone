@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema(
    {
       firstName: { type: String, required: true, min: 3 },
       lastName: { type: String, required: true, min: 3 },
+      username: { type: String, required: true },
       email: { type: String, required: true, unique: true, min: 3 },
       profilePicture: { type: String, default: '' },
       desc: { type: String, default: '' },
@@ -25,6 +26,7 @@ const userSchema = new mongoose.Schema(
       registrationDate: { type: String, default: '' },
       resetPassword: { type: Boolean, default: false },
       refreshToken: { type: String, default: '' },
+      verified: { type: Boolean, default: false },
       edited: { type: Boolean, default: false },
       editDate: { type: String, default: '' },
       lastSeen: { type: String, default: '' }
