@@ -22,7 +22,7 @@ router.delete('/deleteUserPosts', verifyRoles([ROLES.ADMIN]), deleteUsersPostsBy
 
 router.get('/getPost/:postId', verifyRoles([ROLES.USER]), getPost)
 
-router.get('/getAllPosts/:userId', verifyRoles([ROLES.USER, ROLES.EDITOR, ROLES.ADMIN]), getAllPosts)
+router.get('/getAllPosts', verifyRoles([ROLES.USER, ROLES.EDITOR, ROLES.ADMIN]), getAllPosts)
 
 router.get('/getUserPosts/:userId', verifyRoles([ROLES.USER]), getUserPosts)
 

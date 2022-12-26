@@ -18,6 +18,8 @@ exports.createComment = asyncHandler(async(req, res) => {
   if(!post) return res.status(403).json('post not found')
   
   const comment = await Comment.create(newComment)
+
+  await post.updateOne({$push: {commentIds: comment?._id}})
   comment && res.status(201).json(comment)
 })
 
@@ -57,8 +59,11 @@ exports.deleteComment = asyncHandler(async(req, res) => {
 
   const userComment = await Comment.findById(commentId).exec()
   if(!userComment) return res.status(400).json('no comment from user')
-
+  
+  const userPost = await Post.findOne({postId: userComment?.postId}).exec()
   if(!userComment?.userId.equals(user?._id)) return res.sendStatus(401)
+
+  await userPost.updateOne({$pull: {commentIds: userComment?._id}})
   await userComment.deleteOne()
   res.status(204).json('comment deleted')
 })
@@ -75,7 +80,10 @@ exports.deleteCommentByAdmin = asyncHandler(async(req, res) => {
   const comment = await Comment.findById(commentId).exec()
   if(!comment) return res.status(400).json('comment not found')
 
+  const userPost = await Post.findOne({postId: comment?.postId}).exec()
+  await userPost.updateOne({$pull: {commentIds: comment?._id}})
   await comment.deleteOne()
+
   res.status(204).json('comment deleted')
 })
 
@@ -94,9 +102,11 @@ exports.deleteCommentByPostOwner = asyncHandler(async(req, res) => {
   //get target post
   const targetPost = await Post.findOne(comment?.postId).exec()
   if(!targetPost) return res.status(400).json('comment not found')
-  
+
   if(!targetPost?.userId.equals(ownerId)) return res.status(401).json('you are not authorised')
+  await targetPost.updateOne({$pull: {commentIds: comment?._id}})
   await comment.deleteOne()
+
   res.status(204).json('comment deleted')
 })
 
@@ -114,7 +124,11 @@ exports.deleteUsersCommentsByAdmin = asyncHandler(async(req, res) => {
 
   const comments = await Comment.find({postId: post._id}).exec()
   if(!comments?.length) return res.status(400).json('no comments by user')
-
+  
+  await Promise.all(comments.map(comment => {
+    return post.updateOne({$pull: {commentIds: comment?._id}})
+  }))
+  
   await Comment.deleteMany({postId: post._id})
         .then(() => res.status(204).json('user comments deleted'))
         .catch(error => res.status(400).json('error deleting comments'))

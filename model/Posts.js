@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema(
       likes: { type: Array, default: [] },
       disLikes: { type: Array, default: [] },
       isShared: { type: Array, default: [] },
+      commentIds: { type: Array, default: [] },
       edited: { type: Boolean, default: false },
       editDate: { type: String, default: '' }
    },

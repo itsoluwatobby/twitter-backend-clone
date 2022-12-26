@@ -117,13 +117,6 @@ exports.getUserPosts = asyncHandler(async(req, res) => {
 
 //get all posts
 exports.getAllPosts = asyncHandler(async(req, res) => {
-  const {userId} = req.params
-  if(!userId) return res.status(400).json('all fields are required')
-
-  const user = await User.findById(userId).exec()
-  if(!user) return res.status(403).json('user not found')
-  if(user?.isAccountLocked) return res.status(403).json('your account is locked')
-
   const posts = await Post.find().lean()
   if(!posts?.length) return res.status(400).json('posts not found')
   res.status(200).json(posts)

@@ -38,7 +38,7 @@ exports.passwordVerificationJWT = asyncHandler(async(req, res, next) => {
 
 exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const auth = req.headers.authorization || req.headers.Authorization
-   if(!auth || !auth?.startsWith('Bearer ')) return res.status(403).json('bad credentials')
+   if(!auth || !auth?.startsWith('Bearer ')) return res.status(401).json('bad credentials')
    const token = auth.split(' ')[1]
   
    jwt.verify(
@@ -46,7 +46,7 @@ exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
       process.env.ACCESS_TOKEN_SECRET,
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('Expired token')
-         else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
+         else if(error?.name === 'JsonWebTokenError') return res.status(403).json('you are unauthorized')
          req.email = decoded.userInfo?.email
          req.roles = decoded.userInfo?.roles
       }
@@ -56,33 +56,35 @@ exports.accessTokenVerificationJWT = asyncHandler(async(req, res, next) => {
 
 exports.refreshTokenVerificationJWT = asyncHandler(async(req, res, next) => {
    const cookies = req.cookies;
-   if(!cookies?.jwt) return res.status(403).json('bad credentials')
+   if(!cookies?.jwt) return res.status(401).json('bad credentials')
    const token = cookies.jwt
    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });//secure: true
 
-   const matchingToken = await User.findOne({refreshToken: token}).exec()
+   //const matchingToken = await User.findOne({refreshToken: token}).exec()
    //check if refresh token has used previously
-   if(!matchingToken) {
-      jwt.verify(
-         token,
-         process.env.REFRESH_TOKEN_SECRET,
-         async (error, decoded) => {
-            if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
-            if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
-            const hackedUser = await User.findOne({email: decoded.email}).exec()
-            await hackedUser.updateOne({refreshToken: ''}) 
-         }
-      )
-      return res.status(403).json('bad credentials');
-   }
+   // if(matchingToken === null) {
+   //    jwt.verify(
+   //       token,
+   //       process.env.REFRESH_TOKEN_SECRET,
+   //       async (error, decoded) => {
+   //          if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
+   //          if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
+   //          const hackedUser = await User.findOne({email: decoded?.email}).exec()
+   //          hackedUser.refreshToken = ''
+   //          await hackedUser.save(); 
+   //       }
+   //    )
+   //    return res.status(403).json('bad credentialsalllll');
+   // }
+   // console.log(matchingToken)
    
    jwt.verify(
-      matchingToken.refreshToken,
+      token,
       process.env.REFRESH_TOKEN_SECRET,
       (error, decoded) => {
          if(error?.name === 'TokenExpiredError') return res.status(403).json('expired refresh token')
          else if(error?.name === 'JsonWebTokenError') return res.status(401).json('you are unauthorized')
-         req.email = decoded.userInfo?.email
+         req.email = decoded?.userInfo?.email
       }
    )
    next();

@@ -140,7 +140,7 @@ exports.loginHandler = asyncHandler( async(req, res) => {
             }
          },
          process.env.ACCESS_TOKEN_SECRET,
-         {expiresIn: '2h'}
+         {expiresIn: '1h'}
       )
 
       const refreshToken = await jwt.sign(
@@ -269,7 +269,7 @@ exports.getNewAccessToken = asyncHandler( async(req, res) => {
          }
       },
       process.env.ACCESS_TOKEN_SECRET,
-      {expiresIn: '2h'}
+      {expiresIn: '1h'}
    )
 
    const refreshToken = await jwt.sign(
