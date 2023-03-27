@@ -111,18 +111,18 @@ exports.toggleEditorRole = asyncHandler(async(req, res) => {
 
 //delete user by currentUser AND also delete user posts
 exports.deleteAccount = asyncHandler(async(req, res) => {
-    const {userId} = req.params
-    if(!userId) return res.status(403).json('you are unauthorised')
+  const {userId} = req.params
+  if(!userId) return res.status(403).json('you are unauthorised')
 
-    const targetUser = await User.findById(userId).exec()
-    if(!targetUser) return res.status(403).json('user not found')
-    if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
+  const targetUser = await User.findById(userId).exec()
+  if(!targetUser) return res.status(403).json('user not found')
+  if(targetUser?.isAccountLocked) return res.status(403).json('your account is locked')
 
-    const userPosts = await Post.find({userId: targetUser._id}).lean()
-    
-    userPosts?.length && await userPosts.deleteMany()
-    const result = await targetUser.deleteOne()
-    result && res.sendStatus(204)
+  const userPosts = await Post.find({userId: targetUser._id}).lean()
+  
+  userPosts?.length && await userPosts.deleteMany()
+  const result = await targetUser.deleteOne()
+  result && res.sendStatus(204)
 })
 
 //delete user account by admin AND also delete user posts
